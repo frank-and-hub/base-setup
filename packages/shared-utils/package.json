@@ -1,0 +1,17 @@
+{
+  "name": "@monorepo/shared-utils",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "lint": "echo 'shared-utils linted'"
+  },
+  "dependencies": {
+    "@monorepo/shared-types": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  }
+}

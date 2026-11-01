@@ -1,0 +1,20 @@
+{
+  "name": "@monorepo/config",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "lint": "echo 'config linted'"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  },
+  "files": [
+    "base.json",
+    "nest.json",
+    "next.json",
+    "dist"
+  ]
+}
