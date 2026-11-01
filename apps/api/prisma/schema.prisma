@@ -8,6 +8,7 @@ datasource db {
 }
 
 enum Role {
+  SUPER_ADMIN
   ADMIN
   MODERATOR
   USER
@@ -20,16 +21,24 @@ enum UserStatus {
 }
 
 model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  passwordHash  String
-  firstName     String
-  lastName      String
-  role          Role           @default(USER)
-  status        UserStatus     @default(ACTIVE)
-  refreshTokens RefreshToken[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  user_uuid              String             @id @default(uuid()) @map("user_uuid")
+  email                  String             @unique
+  password_hash          String             @map("password_hash")
+  first_name             String             @map("first_name")
+  last_name              String             @map("last_name")
+  phone_number           String?            @map("phone_number")
+  address                String?            @map("address")
+  profile_picture_url    String?            @map("profile_picture_url")
+  role                   Role               @default(USER)
+  status                 UserStatus         @default(ACTIVE)
+  last_login_at          DateTime?          @map("last_login_at")
+  failed_login_attempts  Int                @default(0) @map("failed_login_attempts")
+  locked_until           DateTime?          @map("locked_until")
+  refresh_tokens         RefreshToken[]
+  activity_logs          UserActivityLog[]  @relation("TargetUser")
+  actor_activity_logs    UserActivityLog[]  @relation("ActorUser")
+  created_at             DateTime           @default(now()) @map("created_at")
+  updated_at             DateTime           @updatedAt @map("updated_at")
 
   @@index([email])
   @@index([role])
@@ -37,19 +46,120 @@ model User {
   @@map("users")
 }
 
-model RefreshToken {
-  id         String   @id @default(uuid())
-  tokenHash  String   @unique
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  expiresAt  DateTime
-  revoked    Boolean  @default(false)
-  userAgent  String?
-  ipAddress  String?
-  createdAt  DateTime @default(now())
+model Permission {
+  permission_uuid String           @id @default(uuid()) @map("permission_uuid")
+  code            String           @unique
+  name            String
+  category        String
+  description     String?
+  role_mappings   RolePermission[]
+  created_at      DateTime         @default(now()) @map("created_at")
 
-  @@index([userId])
-  @@index([tokenHash])
+  @@index([code])
+  @@index([category])
+  @@map("permissions")
+}
+
+model RolePermission {
+  role            Role
+  permission_uuid String     @map("permission_uuid")
+  permission      Permission @relation(fields: [permission_uuid], references: [permission_uuid], onDelete: Cascade)
+
+  @@id([role, permission_uuid])
+  @@map("role_permissions")
+}
+
+model RefreshToken {
+  token_uuid String   @id @default(uuid()) @map("token_uuid")
+  token_hash String   @unique @map("token_hash")
+  user_uuid  String   @map("user_uuid")
+  user       User     @relation(fields: [user_uuid], references: [user_uuid], onDelete: Cascade)
+  expires_at DateTime @map("expires_at")
+  revoked    Boolean  @default(false)
+  user_agent String?  @map("user_agent")
+  ip_address String?  @map("ip_address")
+  created_at DateTime @default(now()) @map("created_at")
+
+  @@index([user_uuid])
+  @@index([token_hash])
   @@map("refresh_tokens")
 }
 
+model MenuItem {
+  menu_uuid           String     @id @default(uuid()) @map("menu_uuid")
+  parent_uuid         String?    @map("parent_uuid")
+  parent              MenuItem?  @relation("MenuHierarchy", fields: [parent_uuid], references: [menu_uuid], onDelete: Cascade)
+  children            MenuItem[] @relation("MenuHierarchy")
+  label               String
+  icon                String
+  route               String
+  display_order       Int        @default(0) @map("display_order")
+  is_active           Boolean    @default(true) @map("is_active")
+  required_permission String?    @map("required_permission")
+  allowed_roles       String     @default("SUPER_ADMIN,ADMIN,MODERATOR") @map("allowed_roles")
+  created_at          DateTime   @default(now()) @map("created_at")
+  updated_at          DateTime   @updatedAt @map("updated_at")
+
+  @@index([parent_uuid])
+  @@index([display_order])
+  @@map("menu_items")
+}
+
+model AuditLog {
+  audit_log_uuid         String   @id @default(uuid()) @map("audit_log_uuid")
+  actor_uuid             String?  @map("actor_uuid")
+  actor_email            String?  @map("actor_email")
+  action                 String
+  resource_type          String   @map("resource_type")
+  affected_resource_uuid String?  @map("affected_resource_uuid")
+  timestamp              DateTime @default(now())
+  correlation_id         String   @map("correlation_id")
+  outcome                String   @default("SUCCESS")
+  before_state           Json?    @map("before_state")
+  after_state            Json?    @map("after_state")
+  ip_address             String?  @map("ip_address")
+  user_agent             String?  @map("user_agent")
+
+  @@index([actor_uuid])
+  @@index([resource_type])
+  @@index([timestamp])
+  @@index([correlation_id])
+  @@map("audit_logs")
+}
+
+model UserActivityLog {
+  activity_log_uuid String   @id @default(uuid()) @map("activity_log_uuid")
+  user_uuid         String?  @map("user_uuid")
+  target_user       User?    @relation("TargetUser", fields: [user_uuid], references: [user_uuid], onDelete: SetNull)
+  actor_uuid        String?  @map("actor_uuid")
+  actor_user        User?    @relation("ActorUser", fields: [actor_uuid], references: [user_uuid], onDelete: SetNull)
+  action            String
+  timestamp         DateTime @default(now())
+  correlation_id    String   @map("correlation_id")
+  metadata          Json?    @map("metadata")
+  ip_address        String?  @map("ip_address")
+  user_agent        String?  @map("user_agent")
+
+  @@index([user_uuid])
+  @@index([actor_uuid])
+  @@index([action])
+  @@index([timestamp])
+  @@map("user_activity_logs")
+}
+
+model Setting {
+  setting_uuid    String   @id @default(uuid()) @map("setting_uuid")
+  key             String   @unique
+  value           String
+  type            String   @default("STRING")
+  category        String   @default("GENERAL")
+  is_public       Boolean  @default(false) @map("is_public")
+  description     String?
+  updated_by_uuid String?  @map("updated_by_uuid")
+  created_at      DateTime @default(now()) @map("created_at")
+  updated_at      DateTime @updatedAt @map("updated_at")
+
+  @@index([key])
+  @@index([category])
+  @@map("settings")
+}

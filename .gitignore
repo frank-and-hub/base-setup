@@ -39,3 +39,10 @@ docker-data/
 *.sln
 *.sw?
 
+# Python & Graphify
+.venv/
+graphify-out/*
+apps/web/public/graphify/
+
+# md files
+*.md

@@ -8,8 +8,14 @@ export interface LoginDto {
 export interface RegisterDto {
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
+  phone_number?: string;
+}
+
+export interface ChangePasswordDto {
+  currentPassword: string;
+  newPassword: string;
 }
 
 export interface JwtTokens {
@@ -23,9 +29,10 @@ export interface AuthResponse {
 }
 
 export interface TokenPayload {
-  sub: string;
+  sub: string; // user_uuid
   email: string;
   role: UserRole;
+  permissions?: string[];
   tokenId?: string;
 }
 
@@ -33,3 +40,9 @@ export interface RefreshTokenDto {
   refreshToken: string;
 }
 
+export interface SocialAuthDto {
+  provider: 'google' | 'facebook' | 'apple' | 'instagram';
+  token: string;
+  state?: string;
+  redirectUri?: string;
+}

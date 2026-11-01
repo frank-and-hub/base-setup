@@ -7,6 +7,7 @@ import {
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiResponse } from '@monorepo/shared-types';
+import { normalizeEntity } from '@monorepo/shared-utils';
 
 @Injectable()
 export class TransformInterceptor<T> implements NestInterceptor<T, ApiResponse<T>> {
@@ -14,7 +15,7 @@ export class TransformInterceptor<T> implements NestInterceptor<T, ApiResponse<T
     return next.handle().pipe(
       map((data) => ({
         success: true,
-        data,
+        data: normalizeEntity(data),
         timestamp: new Date().toISOString(),
       })),
     );

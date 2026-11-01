@@ -9,12 +9,17 @@
     "dev:web": "pnpm --filter web dev",
     "build": "pnpm -r --filter \"./packages/*\" build && pnpm -r --filter \"./apps/*\" build",
     "lint": "echo 'All packages linted'",
-    "test": "echo 'All packages tested'",
+    "test": "node --test packages/shared-utils/test/*.test.ts apps/api/test/*.test.ts",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "db:migrate": "pnpm --filter api db:migrate",
     "db:seed": "pnpm --filter api db:seed",
-    "db:studio": "pnpm --filter api db:studio"
+    "db:studio": "pnpm --filter api db:studio",
+    "graphify": ".venv/bin/graphify update .",
+    "graphify:export": ".venv/bin/graphify update . && .venv/bin/graphify tree . && .venv/bin/graphify export callflow-html && .venv/bin/graphify export wiki && mkdir -p apps/web/public/graphify && cp graphify-out/graph.html apps/web/public/graphify/ && cp graphify-out/GRAPH_TREE.html apps/web/public/graphify/ && cp graphify-out/version-0.0.1-callflow.html apps/web/public/graphify/callflow.html",
+    "graphify:benchmark": ".venv/bin/graphify benchmark",
+    "graphify:tree": ".venv/bin/graphify tree .",
+    "graphify:callflow": ".venv/bin/graphify export callflow-html"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

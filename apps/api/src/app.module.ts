@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import configuration from './config/configuration';
@@ -6,21 +6,24 @@ import { PrismaModule } from './database/prisma.module';
 import { ValkeyModule } from './cache/valkey.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { RolesModule } from './roles/roles.module';
+import { NavigationModule } from './navigation/navigation.module';
 import { AuditModule } from './audit/audit.module';
+import { ActivityModule } from './activity/activity.module';
+import { SettingsModule } from './settings/settings.module';
 import { HealthModule } from './health/health.module';
+import { GraphifyModule } from './graphify/graphify.module';
+import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
 
 @Module({
   imports: [
-    // 1. Global Configuration
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
     }),
 
-    // 2. PostgreSQL via Prisma
     PrismaModule,
 
-    // 3. MongoDB via Mongoose
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -29,15 +32,21 @@ import { HealthModule } from './health/health.module';
       }),
     }),
 
-    // 4. In-Memory Cache via Valkey (Redis-compatible)
     ValkeyModule,
 
-    // 5. Domain Modules
     AuthModule,
     UsersModule,
+    RolesModule,
+    NavigationModule,
     AuditModule,
+    ActivityModule,
+    SettingsModule,
     HealthModule,
+    GraphifyModule,
   ],
 })
-export class AppModule {}
-
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(CorrelationIdMiddleware).forRoutes('*');
+  }
+}

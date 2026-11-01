@@ -1,11 +1,18 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { ArrowUpDown, ArrowUp, ArrowDown, AlertCircle, RefreshCw, Inbox } from 'lucide-react';
-import { DataTableProps } from './types';
-import { DataTableToolbar } from './DataTableToolbar';
-import { DataTablePagination } from './DataTablePagination';
-import { Button } from '../ui/Button';
+import React from "react";
+import {
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  AlertCircle,
+  RefreshCw,
+  Inbox,
+} from "lucide-react";
+import { DataTableProps } from "./types";
+import { DataTableToolbar } from "./DataTableToolbar";
+import { DataTablePagination } from "./DataTablePagination";
+import { Button } from "../ui/Button";
 
 export function DataTable<T>({
   data,
@@ -29,7 +36,7 @@ export function DataTable<T>({
   onSelectionChange,
   getRowId = (row: any) => row.id,
   onRetry,
-  emptyMessage = 'No records found',
+  emptyMessage = "No records found",
   toolbarActions,
   filterComponent,
 }: DataTableProps<T>) {
@@ -37,7 +44,9 @@ export function DataTable<T>({
   const isAllSelected =
     data.length > 0 && allCurrentIds.every((id) => selectedIds.includes(id));
   const isPartiallySelected =
-    selectedIds.length > 0 && !isAllSelected && allCurrentIds.some((id) => selectedIds.includes(id));
+    selectedIds.length > 0 &&
+    !isAllSelected &&
+    allCurrentIds.some((id) => selectedIds.includes(id));
 
   const handleSelectAll = (checked: boolean) => {
     if (!onSelectionChange) return;
@@ -62,9 +71,9 @@ export function DataTable<T>({
   const handleSort = (columnId: string, isSortable?: boolean) => {
     if (!isSortable) return;
     if (sortBy === columnId) {
-      onSortChange(columnId, sortOrder === 'asc' ? 'desc' : 'asc');
+      onSortChange(columnId, sortOrder === "asc" ? "desc" : "asc");
     } else {
-      onSortChange(columnId, 'asc');
+      onSortChange(columnId, "asc");
     }
   };
 
@@ -88,7 +97,12 @@ export function DataTable<T>({
             <span>{error}</span>
           </div>
           {onRetry && (
-            <Button variant="outline" size="sm" onClick={onRetry} className="gap-1.5 border-rose-300 text-rose-800 hover:bg-rose-100">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRetry}
+              className="gap-1.5 border-rose-300 text-rose-800 hover:bg-rose-100"
+            >
               <RefreshCw className="w-3.5 h-3.5" />
               Retry
             </Button>
@@ -97,7 +111,7 @@ export function DataTable<T>({
       )}
 
       {/* Main Table Container */}
-      <div className="relative overflow-x-auto min-h-[300px]">
+      <div className="relative overflow-x-auto thin-scroll min-h-[300px]">
         <table className="w-full text-left border-collapse text-sm">
           {/* Header */}
           <thead>
@@ -121,28 +135,28 @@ export function DataTable<T>({
                   <th
                     key={col.id}
                     onClick={() => handleSort(col.id, col.sortable)}
-                    className={`px-6 py-3.5 ${col.sortable ? 'cursor-pointer select-none hover:bg-slate-100/80 transition-colors' : ''} ${
-                      col.align === 'center'
-                        ? 'text-center'
-                        : col.align === 'right'
-                        ? 'text-right'
-                        : 'text-left'
-                    } ${col.className || ''}`}
+                    className={`px-6 py-3.5 ${col.sortable ? "cursor-pointer select-none hover:bg-slate-100/80 transition-colors" : ""} ${
+                      col.align === "center"
+                        ? "text-center"
+                        : col.align === "right"
+                          ? "text-right"
+                          : "text-left"
+                    } ${col.className || ""}`}
                   >
                     <div
                       className={`inline-flex items-center gap-1.5 ${
-                        col.align === 'center'
-                          ? 'justify-center'
-                          : col.align === 'right'
-                          ? 'justify-end'
-                          : 'justify-start'
+                        col.align === "center"
+                          ? "justify-center"
+                          : col.align === "right"
+                            ? "justify-end"
+                            : "justify-start"
                       }`}
                     >
                       {col.header}
                       {col.sortable && (
                         <span className="text-slate-400">
                           {isCurrentSort ? (
-                            sortOrder === 'asc' ? (
+                            sortOrder === "asc" ? (
                               <ArrowUp className="w-3.5 h-3.5 text-indigo-600" />
                             ) : (
                               <ArrowDown className="w-3.5 h-3.5 text-indigo-600" />
@@ -160,7 +174,10 @@ export function DataTable<T>({
           </thead>
 
           {/* Body */}
-          <tbody className="divide-y divide-slate-100">
+          <tbody
+            className="divide-y divide-slate-100"
+            key={new Date().getUTCMilliseconds()}
+          >
             {isLoading ? (
               // Loading Skeleton Rows
               Array.from({ length: limit > 8 ? 8 : limit }).map((_, rIdx) => (
@@ -186,9 +203,12 @@ export function DataTable<T>({
                 >
                   <div className="flex flex-col items-center justify-center gap-2">
                     <Inbox className="w-10 h-10 text-slate-300 stroke-[1.5]" />
-                    <p className="text-base font-medium text-slate-700">{emptyMessage}</p>
+                    <p className="text-base font-medium text-slate-700">
+                      {emptyMessage}
+                    </p>
                     <p className="text-xs text-slate-400">
-                      Try adjusting your filters, searching for a different keyword, or add a new record.
+                      Try adjusting your filters, searching for a different
+                      keyword, or add a new record.
                     </p>
                   </div>
                 </td>
@@ -201,9 +221,9 @@ export function DataTable<T>({
 
                 return (
                   <tr
-                    key={rowId}
+                    key={new Date().getUTCMilliseconds() + "-" + rowId}
                     className={`transition-colors hover:bg-indigo-50/30 ${
-                      isSelected ? 'bg-indigo-50/50' : 'bg-white'
+                      isSelected ? "bg-indigo-50/50" : "bg-white"
                     }`}
                   >
                     {selectable && (
@@ -211,25 +231,29 @@ export function DataTable<T>({
                         <input
                           type="checkbox"
                           checked={isSelected}
-                          onChange={(e) => handleSelectRow(rowId, e.target.checked)}
+                          onChange={(e) =>
+                            handleSelectRow(rowId, e.target.checked)
+                          }
                           className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
                         />
                       </td>
                     )}
                     {columns.map((col) => {
-                      const value = col.accessorKey ? (row as any)[col.accessorKey] : undefined;
+                      const value = col.accessorKey
+                        ? (row as any)[col.accessorKey]
+                        : undefined;
                       return (
                         <td
                           key={`${rowId}-${col.id}`}
-                          className={`px-6 py-4 text-slate-700 ${
-                            col.align === 'center'
-                              ? 'text-center'
-                              : col.align === 'right'
-                              ? 'text-right'
-                              : 'text-left'
-                          } ${col.className || ''}`}
+                          className={`px-4 py-2 text-slate-700 ${
+                            col.align === "center"
+                              ? "text-center"
+                              : col.align === "right"
+                                ? "text-right"
+                                : "text-left"
+                          } ${col.className || ""}`}
                         >
-                          {col.cell ? col.cell(row) : (value ?? '-')}
+                          {col.cell ? col.cell(row) : (value ?? "-")}
                         </td>
                       );
                     })}
@@ -253,4 +277,3 @@ export function DataTable<T>({
     </div>
   );
 }
-

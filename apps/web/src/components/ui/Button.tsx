@@ -15,11 +15,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const baseStyles = 'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
     const variants = {
-      primary: 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500 shadow-sm',
-      secondary: 'bg-slate-100 text-slate-800 hover:bg-slate-200 focus:ring-slate-400',
-      outline: 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus:ring-indigo-500',
-      danger: 'bg-rose-600 text-white hover:bg-rose-700 focus:ring-rose-500 shadow-sm',
-      ghost: 'text-slate-600 hover:bg-slate-100 focus:ring-slate-400',
+      primary: 'bg-indigo-400 text-white hover:bg-indigo-500 focus:ring-indigo-300 shadow-sm',
+      secondary: 'bg-slate-50 text-slate-600 hover:bg-slate-100 focus:ring-slate-200',
+      outline: 'border border-slate-100 bg-white text-slate-500 hover:bg-slate-50 focus:ring-indigo-300',
+      danger: 'bg-rose-400 text-white hover:bg-rose-500 focus:ring-rose-200 shadow-sm',
+      ghost: 'text-slate-400 hover:bg-slate-50 focus:ring-slate-200',
     };
 
     const sizes = {

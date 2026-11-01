@@ -16,9 +16,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full space-y-1">
         {label && (
-          <label htmlFor={inputId} className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-            {label}
-          </label>
+            <label htmlFor={inputId} className="block text-xs font-semibold text-slate-700 uppercase tracking-wider" key={ new Date().getUTCMilliseconds() }>
+              {label}
+            </label>
         )}
         <input
           id={inputId}

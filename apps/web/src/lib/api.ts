@@ -1,4 +1,5 @@
 import { ApiResponse, ApiErrorResponse } from '@monorepo/shared-types';
+import { normalizeEntity } from '@monorepo/shared-utils';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
@@ -56,6 +57,7 @@ class ApiClient {
       const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ refreshToken: this.refreshToken }),
       });
 
@@ -88,7 +90,11 @@ class ApiClient {
       headers.set('Authorization', `Bearer ${this.accessToken}`);
     }
 
-    let response = await fetch(url, { ...options, headers });
+    let response = await fetch(url, {
+      ...options,
+      headers,
+      credentials: options.credentials || 'include',
+    });
 
     // Handle 401 Unauthorized -> Token Refresh
     if (response.status === 401 && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/refresh')) {
@@ -100,7 +106,11 @@ class ApiClient {
         if (newToken) {
           this.onTokenRefreshed(newToken);
           headers.set('Authorization', `Bearer ${newToken}`);
-          response = await fetch(url, { ...options, headers });
+          response = await fetch(url, {
+            ...options,
+            headers,
+            credentials: options.credentials || 'include',
+          });
         }
       } else {
         // Wait for active refresh
@@ -108,7 +118,11 @@ class ApiClient {
           this.addRefreshSubscriber(async (newToken) => {
             headers.set('Authorization', `Bearer ${newToken}`);
             try {
-              const res = await fetch(url, { ...options, headers });
+              const res = await fetch(url, {
+                ...options,
+                headers,
+                credentials: options.credentials || 'include',
+              });
               const data = await this.parseResponse<T>(res);
               resolve(data);
             } catch (err) {
@@ -140,7 +154,8 @@ class ApiClient {
 
     if (isJson) {
       const data: ApiResponse<T> = await response.json();
-      return (data && typeof data === 'object' && 'data' in data ? data.data : data) as T;
+      const rawData = (data && typeof data === 'object' && 'data' in data ? (data as any).data : data);
+      return normalizeEntity(rawData) as T;
     }
 
     return (await response.text()) as unknown as T;
@@ -172,4 +187,3 @@ class ApiClient {
 }
 
 export const api = new ApiClient();
-

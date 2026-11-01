@@ -2,25 +2,27 @@ import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuditService } from './audit.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from '@monorepo/shared-types';
+import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 
-@ApiTags('Audit Logs (MongoDB)')
+@ApiTags('Audit & Error Logs')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN, UserRole.MODERATOR)
-@Controller('audit-logs')
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@Controller()
 export class AuditController {
   constructor(private readonly auditService: AuditService) {}
 
-  @ApiOperation({ summary: 'Get recent document-oriented audit logs from MongoDB' })
-  @Get()
-  async getRecentLogs(
-    @Query('limit') limit = 50,
-    @Query('action') action?: string,
-  ) {
-    return this.auditService.getRecentLogs(Number(limit) || 50, action);
+  @Get('audit-logs')
+  @RequirePermissions('audit_logs.read')
+  @ApiOperation({ summary: 'List structured PostgreSQL audit logs' })
+  async getAuditLogs(@Query() query: any) {
+    return this.auditService.findAuditLogs(query);
+  }
+
+  @Get('error-logs')
+  @RequirePermissions('error_logs.read')
+  @ApiOperation({ summary: 'List MongoDB application error logs with stack traces' })
+  async getErrorLogs(@Query() query: any) {
+    return this.auditService.findErrorLogs(query);
   }
 }
-

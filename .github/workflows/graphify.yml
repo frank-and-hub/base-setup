@@ -1,0 +1,38 @@
+name: Codebase Knowledge Graph CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  graphify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Graphify & Tree-Sitter Parsers
+        run: |
+          python -m pip install --upgrade pip
+          pip install "graphifyy[sql]"
+
+      - name: Verify Knowledge Graph Integrity
+        run: |
+          graphify update .
+          graphify query "AuthService"
+          graphify path "AuthService" "PrismaService"
+
+      - name: Export Visualization Artifacts
+        run: |
+          graphify export --format html
+          graphify export --format tree
+          graphify export --format callflow
+

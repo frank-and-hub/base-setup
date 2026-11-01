@@ -22,9 +22,14 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException('User context missing or role not assigned');
     }
 
+    // Super Admin inherits all admin roles
+    if (user.role === UserRole.SUPER_ADMIN) {
+      return true;
+    }
+
     const hasRole = requiredRoles.includes(user.role as UserRole);
     if (!hasRole) {
-      throw new ForbiddenException(`Insufficient permissions. Required: ${requiredRoles.join(', ')}`);
+      throw new ForbiddenException(`Insufficient role clearance. Required: ${requiredRoles.join(', ')}`);
     }
 
     return true;

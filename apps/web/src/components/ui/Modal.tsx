@@ -9,7 +9,8 @@ export interface ModalProps {
   title: string;
   description?: string;
   children: React.ReactNode;
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl';
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -18,8 +19,11 @@ export const Modal: React.FC<ModalProps> = ({
   title,
   description,
   children,
-  maxWidth = 'md',
+  maxWidth,
+  size = 'md',
 }) => {
+  const chosenSize = maxWidth || size;
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -41,6 +45,7 @@ export const Modal: React.FC<ModalProps> = ({
     md: 'max-w-md',
     lg: 'max-w-lg',
     xl: 'max-w-xl',
+    '2xl': 'max-w-2xl',
   };
 
   return (
@@ -53,7 +58,7 @@ export const Modal: React.FC<ModalProps> = ({
 
       {/* Dialog Box */}
       <div
-        className={`relative w-full ${widthClasses[maxWidth]} bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden transform transition-all z-10`}
+        className={`relative w-full ${widthClasses[chosenSize] || 'max-w-md'} bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden transform transition-all z-10`}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
           <div>
@@ -72,4 +77,3 @@ export const Modal: React.FC<ModalProps> = ({
     </div>
   );
 };
-

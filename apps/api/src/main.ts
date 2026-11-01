@@ -8,6 +8,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { RateLimitGuard } from './common/guards/rate-limit.guard';
 import { ValkeyService } from './cache/valkey.service';
+import { AuditService } from './audit/audit.service';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -15,6 +16,7 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   const valkeyService = app.get(ValkeyService);
+  const auditService = app.get(AuditService);
   const port = configService.get<number>('port', 4000);
   const corsOrigin = configService.get<string>('corsOrigin', 'http://localhost:3000');
 
@@ -26,7 +28,8 @@ async function bootstrap() {
     origin: [corsOrigin, 'http://localhost:3000'],
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type, Accept, Authorization',
+    allowedHeaders: 'Content-Type, Accept, Authorization, x-correlation-id',
+    exposedHeaders: 'x-correlation-id',
   });
 
   // 3. Validation Pipe
@@ -42,7 +45,7 @@ async function bootstrap() {
   );
 
   // 4. Global Filters & Interceptors
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(new HttpExceptionFilter(auditService));
   app.useGlobalInterceptors(new LoggingInterceptor(), new TransformInterceptor());
 
   // 5. Global Rate Limiter
@@ -50,15 +53,19 @@ async function bootstrap() {
 
   // 6. OpenAPI / Swagger Documentation
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('Full-Stack Monorepo REST API')
+    .setTitle('Enterprise Full-Stack Monorepo REST API')
     .setDescription(
-      'Scalable NestJS API backed by PostgreSQL (Prisma), MongoDB (Mongoose), and Valkey cache',
+      'Multi-tenant REST API with RBAC, PostgreSQL (Prisma), MongoDB (Mongoose), and Valkey cache',
     )
-    .setVersion('1.0.0')
+    .setVersion('2.0.0')
     .addBearerAuth()
     .addTag('Authentication')
     .addTag('Users Management')
-    .addTag('Audit Logs (MongoDB)')
+    .addTag('Role & Permission Management')
+    .addTag('Dynamic Navigation & Sidebar')
+    .addTag('Audit & Error Logs')
+    .addTag('User Activity Logs')
+    .addTag('Default Settings')
     .addTag('System Health')
     .build();
 
@@ -71,4 +78,3 @@ async function bootstrap() {
 }
 
 bootstrap();
-

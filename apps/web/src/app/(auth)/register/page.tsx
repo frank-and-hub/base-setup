@@ -2,21 +2,20 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Layers } from 'lucide-react';
 
 export default function RegisterPage() {
-  const router = useRouter();
   const { register } = useAuth();
 
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     email: '',
     password: '',
+    phone_number: '',
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +28,6 @@ export default function RegisterPage() {
 
     try {
       await register(formData);
-      router.push('/users');
     } catch (err: any) {
       setError(err.message || 'Registration failed');
     } finally {
@@ -38,23 +36,23 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-slate-50">
+    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-slate-900 text-slate-100">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="inline-flex p-3 bg-indigo-600 text-white rounded-2xl shadow-lg mb-4">
+        <div className="inline-flex p-3 bg-indigo-600 text-white rounded-2xl shadow-xl shadow-indigo-600/30 mb-4">
           <Layers className="w-8 h-8" />
         </div>
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+        <h2 className="text-2xl font-bold tracking-tight text-white">
           Create an Account
         </h2>
-        <p className="mt-1 text-sm text-slate-500">
-          Join the Monorepo Architecture Platform
+        <p className="mt-1 text-xs text-slate-400">
+          New accounts are granted standard Member role
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 shadow-xl shadow-slate-200/50 sm:rounded-2xl border border-slate-100 sm:px-10">
+        <div className="bg-slate-100/80 backdrop-blur-md py-8 px-6 shadow-2xl rounded-2xl border border-slate-200 sm:px-10">
           {error && (
-            <div className="mb-5 p-3 text-sm bg-rose-50 border border-rose-200 text-rose-700 rounded-lg">
+            <div className="mb-5 p-3 text-xs bg-rose-950/60 border border-rose-800 text-rose-300 rounded-lg">
               {error}
             </div>
           )}
@@ -63,15 +61,15 @@ export default function RegisterPage() {
             <div className="grid grid-cols-2 gap-4">
               <Input
                 label="First Name"
-                value={formData.firstName}
-                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                value={formData.first_name}
+                onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
                 placeholder="Jane"
                 required
               />
               <Input
                 label="Last Name"
-                value={formData.lastName}
-                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                value={formData.last_name}
+                onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
                 placeholder="Doe"
                 required
               />
@@ -81,9 +79,17 @@ export default function RegisterPage() {
               label="Email Address"
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="jane.doe@example.com"
               required
+            />
+
+            <Input
+              label="Phone Number (optional)"
+              type="tel"
+              value={formData.phone_number}
+              onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+              placeholder="+1 (555) 000-0000"
             />
 
             <Input
@@ -91,7 +97,7 @@ export default function RegisterPage() {
               type="password"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              placeholder="Min 8 characters"
+              placeholder="Min 8 characters with 1 number & capital"
               required
             />
 
@@ -100,9 +106,9 @@ export default function RegisterPage() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center text-xs text-slate-500">
+          <div className="mt-6 text-center text-xs text-slate-400">
             Already have an account?{' '}
-            <Link href="/login" className="font-semibold text-indigo-600 hover:text-indigo-500">
+            <Link href="/login" className="font-semibold text-indigo-400 hover:text-indigo-300">
               Sign in here
             </Link>
           </div>
@@ -110,5 +116,8 @@ export default function RegisterPage() {
       </div>
     </div>
   );
-}
 
+  function setEmail(emailVal: string) {
+    setFormData((prev) => ({ ...prev, email: emailVal }));
+  }
+}

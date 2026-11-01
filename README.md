@@ -1,6 +1,6 @@
 # Scalable Full-Stack Monorepo Architecture
 
-A production-ready full-stack monorepo built with **Next.js 15+ (App Router)**, **NestJS 10+**, **PostgreSQL (Prisma ORM)**, **MongoDB (Mongoose ODM)**, and **Valkey (Redis-compatible In-Memory Cache)**.
+A production-ready full-stack monorepo featuring **Next.js 15+ (App Router)**, **NestJS 10+ REST API**, **PostgreSQL (Prisma ORM)**, **MongoDB (Mongoose ODM)**, and **Valkey (Redis-compatible In-Memory Cache)** with a comprehensive **Role-Based Admin Panel**, **Database-Driven Dynamic Sidebar**, and **Dedicated User Portal**.
 
 ---
 
@@ -8,24 +8,26 @@ A production-ready full-stack monorepo built with **Next.js 15+ (App Router)**, 
 
 ```mermaid
 flowchart TD
-    subgraph Client ["Client Browser"]
-        NextJS["Next.js 15 App (Port 3000)<br/>- App Router, Tailwind CSS<br/>- Reusable Server-Side DataTable<br/>- Axios Client with Auto-Refresh Interceptor"]
+    subgraph Client ["Frontend Tier (Next.js 15)"]
+        AdminUI["Admin Panel (/admin/*)<br/>• Dynamic DB Sidebar<br/>• 11 Admin Modules<br/>• Server-Side DataTables"]
+        UserUI["Member Portal (/dashboard/*)<br/>• Personal Overview<br/>• Activity Feed<br/>• Profile & Security"]
+        AuthUI["Auth Gateway (/login & /register)<br/>• Auto Role Redirection<br/>• Social Auth Framework"]
     end
 
-    subgraph Gateway ["API Gateway / Backend"]
-        NestJS["NestJS 10 REST API (Port 4000)<br/>- Global Prefix /api<br/>- Swagger UI at /docs<br/>- Argon2id/Bcrypt Authentication<br/>- RBAC Guards & Decorators<br/>- Sliding Window Rate Limiter"]
+    subgraph Gateway ["Backend Tier (NestJS 10 REST API)"]
+        NestCore["NestJS API (/api) + Swagger (/docs)<br/>• Global x-correlation-id Middleware<br/>• PermissionsGuard & RolesGuard<br/>• Super Admin Bypass Logic<br/>• Transform & Redaction Interceptors<br/>• Distributed Rate Limiting"]
     end
 
-    subgraph DataTier ["Multi-Model Data Layer"]
-        PG[("PostgreSQL 16 (Port 5432)<br/>Relational Data (Prisma ORM)<br/>• Users, Roles, Permissions<br/>• Refresh Token Family & Rotation")]
-        Mongo[("MongoDB 7 (Port 27017)<br/>Document Data (Mongoose ODM)<br/>• Append-only Audit Logs<br/>• Telemetry & JSON Events")]
-        Valkey[("Valkey / Redis 8 (Port 6379)<br/>In-Memory Cache (ioredis)<br/>• Instant Token Blacklisting<br/>• Distributed Rate Limiting<br/>• Session Caching")]
+    subgraph DataTier ["Multi-Model Storage Tier"]
+        PG[("PostgreSQL 16 (Port 5432)<br/>Prisma ORM • UUID Primary Keys<br/>• users, roles, permissions<br/>• menu_items (nested sidebar tree)<br/>• audit_logs (structured diffs)<br/>• user_activity_logs, settings")]
+        Mongo[("MongoDB 7 (Port 27017)<br/>Mongoose ODM<br/>• application_error_logs<br/>• Uncaught exceptions & stack traces<br/>• HTTP request context")]
+        Valkey[("Valkey / Redis 8 (Port 6379)<br/>ioredis<br/>• Instant JWT Blacklisting<br/>• Sliding Window Rate Limiting<br/>• Active session invalidation")]
     end
 
-    NextJS -->|REST API Requests + Bearer JWT| NestJS
-    NestJS -->|ACID Transactions| PG
-    NestJS -->|Document Storage| Mongo
-    NestJS -->|Low-Latency Key-Value Ops| Valkey
+    Client -->|REST API + Bearer JWT + Cookies| Gateway
+    Gateway -->|ACID Transactions & Foreign Keys| PG
+    Gateway -->|Semi-Structured Error Documents| Mongo
+    Gateway -->|Sub-millisecond Key-Value Ops| Valkey
 ```
 
 ---
@@ -37,174 +39,231 @@ my-monorepo/
 ├── apps/
 │   ├── web/                         # Next.js 15+ App Router frontend
 │   │   ├── src/
-│   │   │   ├── app/                 # (auth) & (dashboard) route groups
+│   │   │   ├── app/
+│   │   │   │   ├── admin/           # Admin Panel (Role Guarded: SUPER_ADMIN, ADMIN, MODERATOR)
+│   │   │   │   │   ├── dashboard/   # Module 1: System overview & metrics
+│   │   │   │   │   ├── roles/       # Module 2: Roles & permissions management
+│   │   │   │   │   ├── users/       # Module 3: Full user management data table
+│   │   │   │   │   ├── moderators/  # Module 4: Moderator management
+│   │   │   │   │   ├── navigation/  # Module 5: Dynamic sidebar hierarchy manager
+│   │   │   │   │   ├── audit-logs/  # Module 6: PostgreSQL structured audit logs & diffs
+│   │   │   │   │   ├── activity-logs/# Module 7: User activity tracking
+│   │   │   │   │   ├── error-logs/  # Module 8: MongoDB exception logs & stack traces
+│   │   │   │   │   ├── settings/    # Module 9: System default settings editor
+│   │   │   │   │   ├── profile/     # Module 10: Admin profile & password change
+│   │   │   │   │   ├── health/      # Module 11: Real-time service health benchmarks
+│   │   │   │   │   └── layout.tsx   # Admin layout with dynamic DB sidebar
+│   │   │   │   ├── dashboard/       # Standard User Portal (Isolated from Admin)
+│   │   │   │   │   ├── profile/     # User profile & verified password change
+│   │   │   │   │   ├── layout.tsx   # User portal navigation layout
+│   │   │   │   │   └── page.tsx     # User welcome, summary & personal activities
+│   │   │   │   ├── (auth)/          # Authentication pages (login, register)
+│   │   │   │   ├── layout.tsx       # Root layout with AuthProvider
+│   │   │   │   └── page.tsx         # Smart root redirect based on user role
 │   │   │   ├── components/
-│   │   │   │   ├── data-table/      # Reusable server-paginated, sortable DataTable
-│   │   │   │   ├── users/           # User form & delete modals
-│   │   │   │   └── ui/              # Button, Input, Select, Badge, Modal
-│   │   │   ├── context/             # AuthContext (JWT management & session state)
-│   │   │   └── lib/                 # HTTP client with automatic refresh-token rotation
+│   │   │   │   ├── data-table/      # Reusable generic DataTable component
+│   │   │   │   ├── layout/          # AdminSidebar, AdminTopbar
+│   │   │   │   ├── ui/              # Reusable Button, Modal, Badge, Card, Breadcrumbs, etc.
+│   │   │   │   └── users/           # UserFormModal, DeleteUserModal
+│   │   │   ├── context/             # AuthContext (Role redirection & session management)
+│   │   │   └── lib/                 # ApiClient with automatic token refresh
 │   │   ├── package.json
 │   │   └── tsconfig.json
 │   │
 │   └── api/                         # NestJS 10+ REST API backend
 │       ├── src/
-│       │   ├── auth/                # JWT Auth, refresh-token rotation, RBAC guards
-│       │   ├── users/               # CRUD with server pagination, search & filters
-│       │   ├── audit/               # MongoDB Mongoose schemas & audit logging
-│       │   ├── cache/               # Valkey (Redis-compatible) cache service & limiter
-│       │   ├── common/              # Global filters, interceptors, and rate-limit guards
-│       │   ├── database/            # PrismaService lifecycle management
-│       │   ├── health/              # Multi-database health probe (PG, Mongo, Valkey)
-│       │   ├── config/              # Dynamic configuration module
+│       │   ├── auth/                # JWT Auth, Argon2id/Bcrypt hashing, refresh tokens, guards
+│       │   ├── users/               # User management, profile endpoints, metrics
+│       │   ├── roles/               # Role & permission matrix endpoints
+│       │   ├── navigation/          # Dynamic DB menu tree & circular reference detection
+│       │   ├── audit/               # PostgreSQL structured audit logs & MongoDB error logs
+│       │   ├── activity/            # User activity log tracking & personal feed
+│       │   ├── settings/            # Default settings management
+│       │   ├── cache/               # Valkey cache service & distributed rate limiter
+│       │   ├── health/              # Multi-tier health probe (PG, Mongo, Valkey)
+│       │   ├── common/              # Correlation ID middleware, HttpExceptionFilter, interceptors
+│       │   ├── database/            # PrismaService
 │       │   ├── app.module.ts
-│       │   └── main.ts              # Swagger & CORS bootstrap
+│       │   └── main.ts
 │       ├── prisma/
-│       │   ├── schema.prisma        # PostgreSQL Schema
-│       │   └── seed.ts              # Idempotent DB seeder
+│       │   ├── schema.prisma        # UUID-based relational schema
+│       │   └── seed.ts              # Database seeder with roles, menus, settings, & users
 │       ├── package.json
 │       └── tsconfig.json
 │
 ├── packages/
-│   ├── shared-types/                # Shared TypeScript contracts & DTOs
-│   ├── shared-utils/                # Pagination math, formatters, and sanitizers
-│   ├── validation/                  # Zod validation schemas shared across web & api
-│   └── config/                      # Base TypeScript, ESLint, and Next/Nest configs
+│   ├── shared-types/                # TypeScript interfaces, enums, DTOs, and contracts
+│   ├── shared-utils/                # Menu tree builders, circular checks, redaction, pagination
+│   ├── validation/                  # Zod validation schemas
+│   └── config/                      # Base TypeScript & configuration packages
 │
-├── docker/
-│   ├── postgres/init.sql            # Postgres extensions initialization
-│   ├── mongo/init.js                # Mongo collections & indexes initialization
-│   └── valkey/valkey.conf           # Valkey memory limit and eviction policy
-├── docker-compose.yml               # Multi-container local environment
+├── docker-compose.yml               # PostgreSQL, MongoDB, and Valkey containers
 ├── pnpm-workspace.yaml              # pnpm workspace definition
-├── tsconfig.base.json               # Root TypeScript path mappings
-├── .env.example                     # Environment template
+├── package.json                     # Monorepo scripts (dev, build, test, db:seed)
+├── tsconfig.base.json
 └── README.md
 ```
 
 ---
 
-## 🗄️ Database Storage Strategy: Relational vs Document vs Cache
+## 🔐 Role-Based Access Control & Privilege Hierarchy
 
-A modern application benefits from choosing the **optimal storage engine for each workload**:
+The system supports 4 distinct roles with strict privilege hierarchy:
 
-| Engine | Storage Paradigm | Primary Purpose | What Is Stored Here | Why This Choice? |
-| :--- | :--- | :--- | :--- | :--- |
-| **PostgreSQL** | Relational / ACID | Primary source of truth for structured entity relationships. | `users`, `roles`, `permissions`, `refresh_tokens`. | Relational integrity, foreign-key cascades on deletion, unique constraints on emails and hashed tokens, strict schema evolution via Prisma migrations. |
-| **MongoDB** | Document-Oriented | Append-only event logs, semi-structured telemetry, and dynamic payloads. | `audit_logs` (tracking logins, profile edits, deletions, user-agent metadata). | Flexible schema accommodates evolving event metadata without costly migrations; high append throughput; document nesting. |
-| **Valkey** | In-Memory Key-Value | Ultra-low latency data with transient lifecycles and high eviction rate. | Active token whitelists, blacklisted token IDs, sliding-window rate limit counters. | Sub-millisecond response time; atomic increments (`INCR`, `EXPIRE`); prevents database bottlenecks for repetitive operations. |
+```
+SUPER_ADMIN (Bypasses individual permissions; Full control)
+   └── ADMIN (Explicitly granted administrative permissions)
+        └── MODERATOR (Explicitly granted moderation permissions)
+             └── USER (Isolated to personal member endpoints)
+```
+
+### 1. Granular Permission Matrix (12 Standard Permissions)
+- `users.read`: View users and user profiles
+- `users.create`: Provision new accounts
+- `users.update`: Modify existing user attributes and statuses
+- `users.delete`: Delete user accounts
+- `users.view_activity`: Inspect audit histories and user activity logs
+- `roles.manage`: Create, edit, and assign roles
+- `permissions.manage`: Assign permissions to roles
+- `navigation.manage`: Manage database-driven navigation items
+- `audit_logs.read`: Access PostgreSQL structured audit logs
+- `error_logs.read`: Inspect MongoDB application error traces
+- `settings.manage`: Modify default system settings
+- `moderators.manage`: Provision and manage moderator privileges
+
+### 2. Security Safeguards & Enforcement
+- **Backend-First Authorization:** Every protected NestJS endpoint enforces `JwtAuthGuard`, `RolesGuard`, and `PermissionsGuard`. Hiding a frontend sidebar item is never treated as security.
+- **Protection of Last Active Super Admin:** Attempting to delete, deactivate, or demote the last remaining active Super Admin returns an explicit HTTP 400 rejection.
+- **Privilege Escalation Prevention:** Administrators cannot grant themselves or others privileges they do not possess.
+- **Auditing & Correlation:** Every request receives an `x-correlation-id` header passed into structured audit logs and MongoDB error telemetry.
+- **Automatic Sanitization:** All sensitive credentials (`password`, `accessToken`, `refreshToken`, `client_secret`) are automatically redacted before logging.
 
 ---
 
-## 🔐 Authentication & Authorization Deep Dive
+## 🗄️ Polyglot Database Storage Strategy
 
-### 1. Authentication (Who You Are)
-- **Password Hashing:** Passwords are never stored in plaintext. They are salted and hashed using **Argon2id / bcrypt** with a cost factor of 10.
-- **Short-Lived Access Tokens:** Signed JWT containing `sub` (User ID), `email`, `role`, and a unique `tokenId` (UUID). Valid for **15 minutes**.
-- **Long-Lived Refresh Tokens:** Signed JWT stored in PostgreSQL with a SHA-256 hash. Valid for **7 days**. Delivered via **HTTP-only cookie** or JSON payload.
-- **Refresh Token Rotation:** Every time a refresh token is exchanged, the existing refresh token is marked as `revoked: true` and a completely new pair is issued. If a revoked token is ever presented, the backend rejects it immediately (protecting against replay attacks).
-- **Instant Token Revocation:** When a user logs out or modifies critical security details, their `tokenId` is immediately written to Valkey with a TTL matching the token's remaining lifespan. The NestJS `JwtStrategy` performs an instantaneous sub-millisecond check against Valkey to block blacklisted tokens before reaching any controller logic.
-
-### 2. Authorization (What You Can Do)
-- **Role-Based Access Control (RBAC):** Supported roles: `ADMIN`, `MODERATOR`, `USER`.
-- **Custom Decorator:** `@Roles(UserRole.ADMIN, UserRole.MODERATOR)` applied directly on controller endpoints.
-- **Roles Guard:** Intercepts incoming requests after JWT verification, validates the user's role against the required metadata, and denies access with a `403 Forbidden` response if the role does not have sufficient clearance.
+| Storage Engine | Technology | Role in System | What Is Stored Here |
+| :--- | :--- | :--- | :--- |
+| **Relational Database** | **PostgreSQL 16** (Prisma ORM) | Primary ACID Store | `users`, `roles`, `permissions`, `menu_items`, `audit_logs`, `user_activity_logs`, `settings`, `refresh_tokens`. |
+| **Document Database** | **MongoDB 7** (Mongoose ODM) | Unstructured Telemetry | `application_error_logs` (captures uncaught exceptions, stack traces, and dynamic HTTP request payloads). |
+| **In-Memory Cache** | **Valkey 8** (ioredis) | Ephemeral Speed Tier | Revoked JWT blacklist, sliding window rate-limiting counters, and session state. |
 
 ---
 
-## 🚀 Step-by-Step Setup & Quick Start
+## 🖥️ Admin Navigation Modules & User Experience
 
-### 1. Prerequisites
-- **Node.js** >= 20.x
-- **pnpm** >= 9.x (`npm install -g pnpm`)
-- **Docker** and **Docker Compose**
+### 12 Admin Navigation Modules (`/admin/*`)
+1. **Dashboard (`/admin/dashboard`):** System metrics, 7-day registration trends, active vs. inactive users, and service health indicators.
+2. **Role & Permission Management (`/admin/roles`):** Matrix of roles and the 12 granular permissions with real-time toggle updates.
+3. **User Management (`/admin/users`):** Full CRUD data table, server pagination, sorting, status/role filtering, and Super Admin activity history modal.
+4. **Moderator Management (`/admin/moderators`):** Dedicated view for moderator oversight and permission tuning.
+5. **Navigation Management (`/admin/navigation`):** Tree manager for dynamic PostgreSQL sidebar items with circular reference prevention.
+6. **Audit Logs (`/admin/audit-logs`):** Structured PostgreSQL logs showing state transitions (Before vs. After JSON diff viewer).
+7. **User Activity Logs (`/admin/activity-logs`):** Real-time tracking of logins, logouts, profile changes, and administrative actions with IP attribution.
+8. **Application Error Logs (`/admin/error-logs`):** MongoDB telemetry viewer with status code badges and formatted stack trace modal.
+9. **Default Settings (`/admin/settings`):** Category-grouped system settings with inline editing and JSON validation.
+10. **Profile Management (`/admin/profile`):** Personal administrative details and verified password change.
+11. **System Health & Monitoring (`/admin/health`):** Live latency and heartbeat probes for PostgreSQL, MongoDB, Valkey, and API uptime with 5s polling.
+12. **Codebase Knowledge Graph (`/admin/knowledge-graph`):** Interactive AST topology viewer, BFS dependency path tracer, call-flow sequences, and live graph metrics.
 
-### 2. Clone and Install Dependencies
-```bash
-# Clone the repository
-git clone <repo-url>
-cd <repo-dir>
+### Member Portal (`/dashboard/*`)
+- **Dashboard Overview (`/dashboard`):** Welcome banner, security summary, and personal activity feed (`GET /api/activity-logs/me`).
+- **Profile & Security (`/dashboard/profile`):** Personal contact information update and secure password change.
 
-# Install all monorepo workspace dependencies
-pnpm install
-```
+---
 
-### 3. Start Database Containers
-```bash
-# Start PostgreSQL (5432), MongoDB (27017), and Valkey (6379)
-docker compose up -d
+## 🧠 Graphify Codebase Knowledge Graph & AST Architecture Intelligence
 
-# Verify all containers are healthy
-docker compose ps
-```
+The monorepo includes **Graphify** (`Graphify-Labs/graphify`) integration across all layers (CLI, Antigravity AI assistant, NestJS REST API, and Next.js Admin UI):
 
-### 4. Configure Environment Variables
-```bash
-cp .env.example .env
-```
-
-### 5. Run Database Migrations and Seed
-```bash
-# Push schema to PostgreSQL and generate Prisma client
-pnpm db:migrate
-
-# Seed default administrator, moderator, and sample data table users
-pnpm db:seed
-```
-
-### 6. Start the Development Servers
-```bash
-# Starts both NestJS API (4000) and Next.js Frontend (3000) concurrently with hot-reloading
-pnpm dev
-```
+- **AST Parsing Engine:** Tree-Sitter AST parsers for TypeScript, JavaScript, and SQL. Extracts functions, classes, decorators, schema models, imports, and cross-package references.
+- **Knowledge Topology:** 1,127 nodes, 2,415 edges, and 63 modular communities with a 39.0x token reduction efficiency.
+- **Dedicated NestJS Module (`GraphifyModule`):**
+  - `GET /api/graphify/stats` - Graph summary, node counts, community distribution, top architectural hubs.
+  - `GET /api/graphify/search?q=<query>` - Substring and fuzzy node symbol search.
+  - `GET /api/graphify/node/:id` - Detailed symbol inspection with incoming & outgoing edges.
+  - `GET /api/graphify/path?from=<nodeA>&to=<nodeB>` - Breadth-First-Search (BFS) shortest path tracer.
+  - `POST /api/graphify/refresh` - On-demand AST graph re-extraction.
+- **Interactive Admin UI (`/admin/knowledge-graph`):**
+  - **Force-Directed Graph Viewer:** Embedded interactive D3/SVG graph canvas.
+  - **Symbol & Path Explorer:** Interactive source-to-target path tracer and relationship inspector.
+  - **Mermaid Call-Flow Diagrams:** Visualized architectural call sequence diagrams.
+  - **Collapsible File & Symbol Tree:** Hierarchical monorepo code structure view.
+- **Documentation & Obsidian Vault:**
+  - 73 detailed wiki articles in `graphify-out/wiki/`.
+  - Comprehensive Obsidian vault in `graphify-out/obsidian/` with canvas support.
+- **Git Lifecycle Automation:**
+  - Automated `post-commit`, `post-checkout`, `post-merge`, and `post-rewrite` hooks.
+  - Custom git merge driver for `graphify-out/graph.json` to prevent merge conflicts.
+- **CLI Scripts:**
+  ```bash
+  pnpm graphify          # Re-extract AST and rebuild knowledge graph
+  pnpm graphify:export   # Export HTML visualization, tree view, and callflow diagrams
+  pnpm graphify:tree     # Generate collapsible dependency tree
+  pnpm graphify:callflow # Generate Mermaid call-flow sequences
+  pnpm graphify:benchmark# Measure AST extraction benchmarks
+  ```
 
 ---
 
 ## 🔑 Default Seed Credentials
 
-| Role | Email | Password | Access Level |
+All test accounts are seeded with pre-configured roles:
+
+| Role | Email | Password | Access Target |
 | :--- | :--- | :--- | :--- |
-| **Admin** | `admin@example.com` | `Admin123!` | Full CRUD, User deletion, RBAC management, Audit log access |
-| **Moderator** | `moderator@example.com` | `User123!` | User viewing & updates, Audit log access |
-| **User** | `user@example.com` | `User123!` | Standard member access |
+| **SUPER_ADMIN** | `superadmin@example.com` | `SuperAdmin123!` | `/admin/dashboard` (Full system bypass) |
+| **ADMIN** | `admin@example.com` | `Admin123!` | `/admin/dashboard` (Granted permissions) |
+| **MODERATOR** | `moderator@example.com` | `User123!` | `/admin/dashboard` (Moderation subset) |
+| **USER** | `user@example.com` | `User123!` | `/dashboard` (Member Portal) |
+
+> [!NOTE]
+> The login interface contains no role dropdown; destination routing is determined dynamically by the backend following authentication.
 
 ---
 
-## 📊 Reusable Data Table Component Features
+## 🚀 Getting Started
 
-The Next.js frontend includes a generic, reusable `<DataTable<T> />` component built with TypeScript:
+### 1. Prerequisites
+- **Node.js** >= 20.x
+- **pnpm** >= 9.x (`npm install -g pnpm`)
+- **Docker** & **Docker Compose**
 
-1. **Server-Side Pagination:** Interacts directly with NestJS pagination metadata (`page`, `limit`, `totalItems`, `totalPages`, `hasNextPage`, `hasPrevPage`).
-2. **Dynamic Sorting:** Click on any column header to toggle `asc`, `desc`, or default sort order with visual indicators.
-3. **Debounced Search:** Live filter across user fields (`name`, `email`) with a 350ms debounce window.
-4. **Multi-Faceted Filtering:** Dropdown filters for RBAC Roles (`ADMIN`, `MODERATOR`, `USER`) and Statuses (`ACTIVE`, `INACTIVE`, `SUSPENDED`).
-5. **Robust State Handling:**
-   - **Loading:** Smooth animated skeleton placeholders.
-   - **Empty:** Clean illustrative message with reset suggestions.
-   - **Error:** Interactive error banner with a one-click `Retry` action.
-6. **Row Selection:** Bulk selection checkbox supporting indeterminate state.
-7. **Complete CRUD Operations:** Create user modal with validation, inline update modal, and secure delete confirmation modal.
+### 2. Start Database Services
+```bash
+docker compose up -d
+docker compose ps
+```
+
+### 3. Initialize Database & Seed
+```bash
+# Push Prisma schema and seed default data
+pnpm --filter api db:push
+pnpm --filter api db:seed
+```
+
+### 4. Run Development Servers
+```bash
+# Concurrently starts NestJS API (Port 4000) and Next.js Frontend (Port 3000)
+pnpm dev
+```
+
+### 5. Run Production Build
+```bash
+# Builds all shared packages, api, and web applications
+pnpm build
+```
+
+### 6. Run Test Suite
+```bash
+# Executes unit tests for shared utilities and privilege hierarchy rules
+pnpm test
+```
 
 ---
 
-## 🛠️ Health Checks & Observability
-
-- **API Health Endpoint:** `GET http://localhost:4000/api/health`
-  - Tests PostgreSQL connection via `SELECT 1`.
-  - Tests MongoDB connection via Mongoose `connection.readyState`.
-  - Tests Valkey connection via `PING -> PONG`.
-  - Returns individual latency metrics and system uptime.
-- **Interactive Swagger Documentation:** `http://localhost:4000/docs`
-
----
-
-## 🚢 Production Deployment Guidelines
-
-1. **Containerized Build:** Use multi-stage Dockerfiles for `apps/web` and `apps/api` with standalone Next.js output and pruned pnpm dependencies.
-2. **Reverse Proxy:** Terminate SSL/TLS at Nginx, Cloudflare, or AWS ALB, proxying `/api` traffic to the NestJS cluster and `/` to Next.js.
-3. **Managed Services:** Seamlessly swap Docker containers for managed cloud services:
-   - PostgreSQL -> Amazon RDS / Supabase / Cloud SQL
-   - MongoDB -> MongoDB Atlas
-   - Valkey -> AWS ElastiCache / Redis Cloud
-4. **Environment Secrets:** Store `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, and database connection strings in AWS Secrets Manager or HashiCorp Vault.
-
+## 🌐 Endpoints & Interactive Documentation
+- **Frontend Web App:** `http://localhost:3000`
+- **NestJS REST API:** `http://localhost:4000/api`
+- **Interactive Swagger Docs:** `http://localhost:4000/docs`
+- **Health Check Probe:** `http://localhost:4000/api/health`

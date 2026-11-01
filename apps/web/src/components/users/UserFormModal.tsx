@@ -26,8 +26,10 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
 
   const [formData, setFormData] = useState({
     email: '',
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
+    phone_number: '',
+    address: '',
     password: '',
     role: UserRole.USER,
     status: UserStatus.ACTIVE,
@@ -39,8 +41,10 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
     if (user) {
       setFormData({
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        phone_number: user.phone_number || '',
+        address: user.address || '',
         password: '',
         role: user.role,
         status: user.status,
@@ -48,8 +52,10 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
     } else {
       setFormData({
         email: '',
-        firstName: '',
-        lastName: '',
+        first_name: '',
+        last_name: '',
+        phone_number: '',
+        address: '',
         password: '',
         role: UserRole.USER,
         status: UserStatus.ACTIVE,
@@ -63,11 +69,11 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
     if (!formData.email || !formData.email.includes('@')) {
       errs.email = 'Valid email is required';
     }
-    if (!formData.firstName.trim()) {
-      errs.firstName = 'First name is required';
+    if (!formData.first_name.trim()) {
+      errs.first_name = 'First name is required';
     }
-    if (!formData.lastName.trim()) {
-      errs.lastName = 'Last name is required';
+    if (!formData.last_name.trim()) {
+      errs.last_name = 'Last name is required';
     }
     if (!isEditing && (!formData.password || formData.password.length < 8)) {
       errs.password = 'Password must be at least 8 characters long';
@@ -82,8 +88,10 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
 
     const payload: any = {
       email: formData.email,
-      firstName: formData.firstName,
-      lastName: formData.lastName,
+      first_name: formData.first_name,
+      last_name: formData.last_name,
+      phone_number: formData.phone_number || undefined,
+      address: formData.address || undefined,
       role: formData.role,
       status: formData.status,
     };
@@ -107,8 +115,8 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
       title={isEditing ? 'Edit User Details' : 'Create New User'}
       description={
         isEditing
-          ? 'Update the permissions, status, or identity for this user.'
-          : 'Add a new member to PostgreSQL database with assigned RBAC role.'
+          ? 'Update permissions, status, or identity for this account.'
+          : 'Add a new member with assigned RBAC role.'
       }
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -121,18 +129,18 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
         <div className="grid grid-cols-2 gap-4">
           <Input
             label="First Name"
-            value={formData.firstName}
-            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+            value={formData.first_name}
+            onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
             placeholder="John"
-            error={errors.firstName}
+            error={errors.first_name}
             required
           />
           <Input
             label="Last Name"
-            value={formData.lastName}
-            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+            value={formData.last_name}
+            onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
             placeholder="Doe"
-            error={errors.lastName}
+            error={errors.last_name}
             required
           />
         </div>
@@ -146,6 +154,21 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
           error={errors.email}
           required
         />
+
+        <div className="grid grid-cols-2 gap-4">
+          <Input
+            label="Phone Number"
+            value={formData.phone_number}
+            onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+            placeholder="+1 (555) 000-0000"
+          />
+          <Input
+            label="Address"
+            value={formData.address}
+            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+            placeholder="City, Country"
+          />
+        </div>
 
         <Input
           label={isEditing ? 'New Password (optional)' : 'Password'}
@@ -165,6 +188,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
               { label: 'Standard User (USER)', value: UserRole.USER },
               { label: 'Moderator (MODERATOR)', value: UserRole.MODERATOR },
               { label: 'Administrator (ADMIN)', value: UserRole.ADMIN },
+              { label: 'Super Administrator (SUPER_ADMIN)', value: UserRole.SUPER_ADMIN },
             ]}
           />
 
@@ -192,4 +216,3 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
     </Modal>
   );
 };
-
