@@ -13,6 +13,7 @@
     "lint": "echo 'mobile lint placeholder'"
   },
   "dependencies": {
+    "@babel/runtime": "^7.25.0",
     "@expo/vector-icons": "^14.0.2",
     "@monorepo/config": "workspace:*",
     "@monorepo/shared-types": "workspace:*",
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@types/react": "^19.0.8",
+    "babel-preset-expo": "~12.0.12",
     "typescript": "^5.8.2"
   },
   "private": true

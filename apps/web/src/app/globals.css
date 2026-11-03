@@ -40,8 +40,6 @@ body {
   overflow: hidden;
 }
 
-
-
 input,
 textarea,
 select {
@@ -61,7 +59,6 @@ textarea::placeholder {
   color: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(8px);
 }
-
 
 input:focus,
 textarea:focus,
