@@ -176,7 +176,7 @@ export function DataTable<T>({
           {/* Body */}
           <tbody
             className="divide-y divide-slate-100"
-            key={new Date().getUTCMilliseconds()}
+            key={new Date().getUTCMilliseconds() * Math.random()}
           >
             {isLoading ? (
               // Loading Skeleton Rows
@@ -221,7 +221,7 @@ export function DataTable<T>({
 
                 return (
                   <tr
-                    key={new Date().getUTCMilliseconds() + "-" + rowId}
+                    key={new Date().getUTCMilliseconds() * Math.random()}
                     className={`transition-colors hover:bg-indigo-50/30 ${
                       isSelected ? "bg-indigo-50/50" : "bg-white"
                     }`}

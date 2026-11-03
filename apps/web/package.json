@@ -13,6 +13,7 @@
     "@monorepo/config": "workspace:*",
     "@monorepo/shared-types": "workspace:*",
     "@monorepo/shared-utils": "workspace:*",
+    "@monorepo/ui": "workspace:*",
     "@monorepo/validation": "workspace:*",
     "clsx": "^2.1.1",
     "lucide-react": "^0.475.0",

@@ -31,6 +31,8 @@
       "@monorepo/shared-utils/*": ["../../packages/shared-utils/src/*"],
       "@monorepo/validation": ["../../packages/validation/src/index.ts"],
       "@monorepo/validation/*": ["../../packages/validation/src/*"],
+      "@monorepo/ui": ["../../packages/ui/src/index.ts"],
+      "@monorepo/ui/*": ["../../packages/ui/src/*"],
       "@monorepo/config": ["../../packages/config/src/index.ts"]
     }
   },

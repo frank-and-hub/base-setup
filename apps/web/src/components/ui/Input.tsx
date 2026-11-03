@@ -11,14 +11,15 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type = 'text', label, error, helperText, id, ...props }, ref) => {
-    const inputId = id || props.name || Math.random().toString(36).substring(7);
+    const generatedId = React.useId();
+    const inputId = id || props.name || generatedId;
 
     return (
       <div className="w-full space-y-1">
         {label && (
-            <label htmlFor={inputId} className="block text-xs font-semibold text-slate-700 uppercase tracking-wider" key={ new Date().getUTCMilliseconds() }>
-              {label}
-            </label>
+          <label htmlFor={inputId} className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+            {label}
+          </label>
         )}
         <input
           id={inputId}

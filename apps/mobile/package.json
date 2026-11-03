@@ -17,6 +17,7 @@
     "@monorepo/config": "workspace:*",
     "@monorepo/shared-types": "workspace:*",
     "@monorepo/shared-utils": "workspace:*",
+    "@monorepo/ui": "workspace:*",
     "@monorepo/validation": "workspace:*",
     "expo": "~52.0.20",
     "expo-secure-store": "~14.0.1",
