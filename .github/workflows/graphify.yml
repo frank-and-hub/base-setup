@@ -32,7 +32,19 @@ jobs:
 
       - name: Export Visualization Artifacts
         run: |
-          graphify export --format html
-          graphify export --format tree
-          graphify export --format callflow
+          graphify export html
+          graphify export callflow-html
+          graphify tree .
+
+      - name: Upload Knowledge Graph Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: knowledge-graph-artifacts
+          path: |
+            graphify-out/graph.html
+            graphify-out/GRAPH_TREE.html
+            graphify-out/*.html
+            graphify-out/GRAPH_REPORT.md
+          retention-days: 14
 
