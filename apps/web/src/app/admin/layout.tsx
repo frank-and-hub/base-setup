@@ -9,7 +9,7 @@ import { UserRole } from '@monorepo/shared-types';
 import { Loader2, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({ children }: { children: React.ReactNode }): React.ReactNode {
   const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const [isMobileOpen, setIsMobileOpen] = useState(false);

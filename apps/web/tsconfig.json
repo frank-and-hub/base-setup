@@ -20,6 +20,10 @@
       }
     ],
     "paths": {
+      "react": ["./node_modules/@types/react"],
+      "react/*": ["./node_modules/@types/react/*"],
+      "react-dom": ["./node_modules/@types/react-dom"],
+      "react-dom/*": ["./node_modules/@types/react-dom/*"],
       "@/*": ["./src/*"],
       "@monorepo/shared-types": ["../../packages/shared-types/src/index.ts"],
       "@monorepo/shared-types/*": ["../../packages/shared-types/src/*"],

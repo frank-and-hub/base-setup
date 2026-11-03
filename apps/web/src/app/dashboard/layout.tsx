@@ -12,7 +12,7 @@ export default function UserDashboardLayout({
   children,
 }: {
   children: React.ReactNode;
-}) {
+}): React.ReactNode {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();

@@ -52,6 +52,7 @@ my-monorepo/
 │   │   │   │   │   ├── settings/    # Module 9: System default settings editor
 │   │   │   │   │   ├── profile/     # Module 10: Admin profile & password change
 │   │   │   │   │   ├── health/      # Module 11: Real-time service health benchmarks
+│   │   │   │   │   ├── knowledge-graph/ # Module 12: Knowledge graph AST explorer
 │   │   │   │   │   └── layout.tsx   # Admin layout with dynamic DB sidebar
 │   │   │   │   ├── dashboard/       # Standard User Portal (Isolated from Admin)
 │   │   │   │   │   ├── profile/     # User profile & verified password change
@@ -69,6 +70,17 @@ my-monorepo/
 │   │   │   └── lib/                 # ApiClient with automatic token refresh
 │   │   ├── package.json
 │   │   └── tsconfig.json
+│   │
+│   ├── mobile/                      # React Native 0.76+ & Expo 52+ Cross-Platform Mobile App
+│   │   ├── src/
+│   │   │   ├── screens/             # Login, Register, UserDashboard, AdminDashboard, Users, Roles, Logs, Health, Graph
+│   │   │   ├── components/          # Native Badge, Button, Input, Card, HostSettingsModal
+│   │   │   ├── context/             # Mobile AuthContext & ThemeContext
+│   │   │   └── lib/                 # Mobile ApiClient (Expo SecureStore + Bearer tokens + 10.0.2.2/LAN resolver)
+│   │   ├── metro.config.js          # Monorepo pnpm symlink & package resolver
+│   │   ├── app.json                 # Expo configuration (com.monorepo.mobile)
+│   │   ├── eas.json                 # Android APK preview & production builds
+│   │   └── package.json
 │   │
 │   └── api/                         # NestJS 10+ REST API backend
 │       ├── src/
@@ -169,6 +181,33 @@ SUPER_ADMIN (Bypasses individual permissions; Full control)
 ### Member Portal (`/dashboard/*`)
 - **Dashboard Overview (`/dashboard`):** Welcome banner, security summary, and personal activity feed (`GET /api/activity-logs/me`).
 - **Profile & Security (`/dashboard/profile`):** Personal contact information update and secure password change.
+
+---
+
+## 📱 Cross-Platform Mobile Application (`apps/mobile`)
+
+The monorepo contains a **React Native (Expo SDK 52+)** mobile application for iOS and Android, sharing 100% of the TypeScript interfaces, Zod validation schemas, and API contracts with the web frontend.
+
+### 1. Parity & Architecture Symmetry
+- **Shared Contracts:** Consumes `@monorepo/shared-types` (Auth, User, Role DTOs) and `@monorepo/validation` (Zod login and register form schemas).
+- **Identical API Calls:** Communicates with the same NestJS backend endpoints (`/api/auth/*`, `/api/users/*`, `/api/roles/*`, `/api/activity-logs/*`, `/api/health`, `/api/graphify/stats`) with automatic JWT bearer token attachment and refresh logic.
+- **Role-Based Routing:**
+  - `USER`: Redirects to the mobile Member Portal with personal security overview and activity stream.
+  - `SUPER_ADMIN`, `ADMIN`, `MODERATOR`: Redirects to the mobile Admin Console with live system metrics, user table, role matrix, and health probes.
+- **Storage & Security:** Uses `expo-secure-store` to keep access and refresh tokens safely stored in Android KeyStore and iOS Keychain.
+- **Dynamic Server Host Config:** Includes an in-app Server Host modal allowing developers to switch between `10.0.2.2` (Android emulator), `localhost` (iOS simulator), and local WiFi LAN IP (`192.168.x.x`) for physical device testing without recompiling.
+
+### 2. Mobile CLI Scripts
+```bash
+pnpm mobile             # Start Expo Metro development server
+pnpm mobile:android     # Launch in Android emulator / connected device
+pnpm mobile:ios         # Launch in iOS simulator
+pnpm mobile:web         # Run mobile layout in web browser
+pnpm mobile:build:apk   # Prebuild and generate standalone release Android APK (.apk)
+```
+
+### 3. Automated Android APK CI/CD
+The monorepo includes [`.github/workflows/mobile-apk.yml`](file:///.github/workflows/mobile-apk.yml). On push to `main` or manual trigger (`workflow_dispatch`), GitHub Actions compiles the Android release APK and publishes it as a downloadable artifact.
 
 ---
 
