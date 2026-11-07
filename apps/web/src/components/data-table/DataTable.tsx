@@ -78,7 +78,7 @@ export function DataTable<T>({
   };
 
   return (
-    <div className="w-full bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className="w-full bg-white rounded-xl btn hadow-sm border border-slate-200 overflow-hidden">
       {/* Toolbar */}
       <DataTableToolbar
         searchValue={searchValue}

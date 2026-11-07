@@ -83,6 +83,11 @@ export class ValkeyService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  // Direct client access for advanced operations (e.g., queues, pipelines)
+  getClient(): Redis {
+    return this.client;
+  }
+
   // Fast token revocation support
   async blacklistToken(tokenId: string, ttlSeconds = 900): Promise<void> {
     await this.set(`blacklist:token:${tokenId}`, { revokedAt: new Date().toISOString() }, ttlSeconds);

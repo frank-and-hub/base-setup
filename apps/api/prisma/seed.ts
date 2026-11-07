@@ -8,6 +8,12 @@ async function main() {
   console.log('🌱 Starting comprehensive database seeding...');
 
   // Clean existing tables
+  await prisma.emailAttachment.deleteMany({});
+  await prisma.messageRecipient.deleteMany({});
+  await prisma.emailMessage.deleteMany({});
+  await prisma.emailTemplate.deleteMany({});
+  await prisma.userProviderConfiguration.deleteMany({});
+  await prisma.provider.deleteMany({});
   await prisma.rolePermission.deleteMany({});
   await prisma.permission.deleteMany({});
   await prisma.menuItem.deleteMany({});
@@ -31,6 +37,7 @@ async function main() {
     { code: 'error_logs.read', name: 'View Error Logs', category: 'Audit & Compliance', description: 'Can inspect MongoDB application error logs' },
     { code: 'settings.manage', name: 'Manage Settings', category: 'System', description: 'Can update application default settings' },
     { code: 'moderators.manage', name: 'Manage Moderators', category: 'Access Control', description: 'Can assign and supervise moderators' },
+    { code: 'messaging.manage', name: 'Manage Messaging', category: 'Messaging', description: 'Can configure providers and send messages' },
   ];
 
   const createdPermissions = new Map<string, string>();
@@ -58,7 +65,7 @@ async function main() {
   const adminPermCodes = [
     'users.read', 'users.create', 'users.update', 'users.view_activity',
     'roles.manage', 'permissions.manage', 'navigation.manage', 'audit_logs.read', 'error_logs.read',
-    'settings.manage', 'moderators.manage'
+    'settings.manage', 'moderators.manage', 'messaging.manage'
   ];
   for (const code of adminPermCodes) {
     const permUuid = createdPermissions.get(code);
@@ -178,6 +185,7 @@ async function main() {
     { label: 'Profile Management', icon: 'User', route: '/admin/profile', display_order: 10, allowed_roles: 'SUPER_ADMIN,ADMIN,MODERATOR' },
     { label: 'System Health & Monitoring', icon: 'Activity', route: '/admin/health', display_order: 11, allowed_roles: 'SUPER_ADMIN,ADMIN' },
     { label: 'Codebase Knowledge Graph', icon: 'Network', route: '/admin/knowledge-graph', display_order: 12, allowed_roles: 'SUPER_ADMIN,ADMIN' },
+    { label: 'Messaging Platform', icon: 'Mail', route: '/admin/messaging', display_order: 13, required_permission: 'messaging.manage', allowed_roles: 'SUPER_ADMIN,ADMIN' },
   ];
 
   const parentMenuMap = new Map<string, string>();
@@ -279,6 +287,261 @@ async function main() {
       metadata: { login_method: 'PASSWORD', mfa: false },
       ip_address: '127.0.0.1',
       user_agent: 'Chrome/120.0 Linux',
+    },
+  });
+
+  // 8. Seed Messaging Providers (Phase 1)
+  const providers = [
+    {
+      name: 'Custom SMTP Server',
+      slug: 'smtp',
+      type: 'EMAIL' as const,
+      description: 'Send emails using standard SMTP protocols with TLS/SSL encryption.',
+      logo: '/providers/smtp.svg',
+      status: 'ACTIVE' as const,
+      is_default: true,
+      documentation_url: 'https://en.wikipedia.org/wiki/Simple_Mail_Transfer_Protocol',
+      configuration_schema: {
+        type: 'object',
+        required: ['host', 'port', 'secure', 'auth_user', 'auth_password'],
+        properties: {
+          host: { type: 'string', title: 'SMTP Host' },
+          port: { type: 'number', title: 'Port (e.g. 587, 465, 25)' },
+          secure: { type: 'boolean', title: 'Use SSL/TLS (true for 465, false for 587/STARTTLS)' },
+          auth_user: { type: 'string', title: 'SMTP Username' },
+          auth_password: { type: 'string', title: 'SMTP Password', format: 'password' },
+        },
+      },
+      form_fields: [
+        { name: 'configuration_name', label: 'Configuration Name', type: 'text', placeholder: 'My Company SMTP', required: true },
+        { name: 'sender_name', label: 'Default From Name', type: 'text', placeholder: 'Acme Support', required: true },
+        { name: 'sender_email', label: 'Default From Email', type: 'email', placeholder: 'support@acme.com', required: true },
+        { name: 'reply_to', label: 'Reply-To Email', type: 'email', placeholder: 'help@acme.com', required: false },
+        { name: 'host', label: 'SMTP Host', type: 'text', placeholder: 'smtp.mailtrap.io or smtp.gmail.com', required: true },
+        { name: 'port', label: 'SMTP Port', type: 'number', placeholder: '587', required: true },
+        { name: 'secure', label: 'Use SSL/TLS Directly (Port 465)', type: 'boolean', defaultValue: false, required: false },
+        { name: 'auth_user', label: 'SMTP Username', type: 'text', placeholder: 'username / api_user', required: true },
+        { name: 'auth_password', label: 'SMTP Password', type: 'password', placeholder: '••••••••', required: true },
+      ],
+    },
+    {
+      name: 'SendGrid Email API',
+      slug: 'sendgrid',
+      type: 'EMAIL' as const,
+      description: 'Cloud email delivery service using the official SendGrid REST Mail API.',
+      logo: '/providers/sendgrid.svg',
+      status: 'ACTIVE' as const,
+      is_default: true,
+      documentation_url: 'https://docs.sendgrid.com/for-developers/sending-email',
+      configuration_schema: {
+        type: 'object',
+        required: ['api_key'],
+        properties: {
+          api_key: { type: 'string', title: 'SendGrid API Key', format: 'password' },
+        },
+      },
+      form_fields: [
+        { name: 'configuration_name', label: 'Configuration Name', type: 'text', placeholder: 'Production SendGrid Account', required: true },
+        { name: 'sender_name', label: 'Verified Sender Name', type: 'text', placeholder: 'Acme Notifications', required: true },
+        { name: 'sender_email', label: 'Verified Sender Email', type: 'email', placeholder: 'notifications@acme.com', required: true },
+        { name: 'reply_to', label: 'Reply-To Email', type: 'email', placeholder: 'support@acme.com', required: false },
+        { name: 'api_key', label: 'SendGrid API Key (SG...)', type: 'password', placeholder: 'SG.xxxxxxxxxxxxxxxxxxxxxxxx', required: true },
+      ],
+    },
+    {
+      name: 'Amazon SES',
+      slug: 'amazon-ses',
+      type: 'EMAIL' as const,
+      description: 'High-throughput, cost-effective Amazon Simple Email Service (SES) via SMTP interface.',
+      logo: '/providers/amazon-ses.svg',
+      status: 'ACTIVE' as const,
+      is_default: true,
+      documentation_url: 'https://docs.aws.amazon.com/ses/latest/dg/send-email-smtp.html',
+      configuration_schema: {
+        type: 'object',
+        required: ['host', 'port', 'auth_user', 'auth_password'],
+        properties: {
+          host: { type: 'string', title: 'SES SMTP Endpoint', default: 'email-smtp.us-east-1.amazonaws.com' },
+          port: { type: 'number', title: 'Port (587 or 465)', default: 587 },
+          auth_user: { type: 'string', title: 'SMTP User Name (IAM Access Key)' },
+          auth_password: { type: 'string', title: 'SMTP Password (Secret Key)', format: 'password' },
+        },
+      },
+      form_fields: [
+        { name: 'host', label: 'SES SMTP Host', type: 'text', placeholder: 'email-smtp.us-east-1.amazonaws.com', default_value: 'email-smtp.us-east-1.amazonaws.com', required: true, description: 'AWS SES SMTP endpoint for your region' },
+        { name: 'port', label: 'Port', type: 'number', placeholder: '587', default_value: 587, required: true },
+        { name: 'auth_user', label: 'SES SMTP User Name', type: 'text', placeholder: 'AKIAIOSFODNN7EXAMPLE', required: true, description: 'Generated SES SMTP username' },
+        { name: 'auth_password', label: 'SES SMTP Password', type: 'password', placeholder: '••••••••', required: true, description: 'Generated SES SMTP password' },
+      ],
+    },
+    {
+      name: 'Mailgun',
+      slug: 'mailgun',
+      type: 'EMAIL' as const,
+      description: 'Transactional email API and SMTP relay for developers by Sinch Mailgun.',
+      logo: '/providers/mailgun.svg',
+      status: 'ACTIVE' as const,
+      is_default: true,
+      documentation_url: 'https://documentation.mailgun.com/docs/mailgun/user-manual/sending-messages/#sending-via-smtp',
+      configuration_schema: {
+        type: 'object',
+        required: ['host', 'port', 'auth_user', 'auth_password'],
+        properties: {
+          host: { type: 'string', title: 'Mailgun Host', default: 'smtp.mailgun.org' },
+          port: { type: 'number', title: 'Port', default: 587 },
+          auth_user: { type: 'string', title: 'SMTP Login (postmaster@yourdomain.com)' },
+          auth_password: { type: 'string', title: 'SMTP Password', format: 'password' },
+        },
+      },
+      form_fields: [
+        { name: 'host', label: 'Mailgun SMTP Host', type: 'text', placeholder: 'smtp.mailgun.org', default_value: 'smtp.mailgun.org', required: true },
+        { name: 'port', label: 'Port', type: 'number', placeholder: '587', default_value: 587, required: true },
+        { name: 'auth_user', label: 'SMTP Username', type: 'text', placeholder: 'postmaster@yourdomain.com', required: true },
+        { name: 'auth_password', label: 'SMTP Password', type: 'password', placeholder: '••••••••', required: true },
+      ],
+    },
+    {
+      name: 'Mailchimp Transactional',
+      slug: 'mailchimp-transactional',
+      type: 'EMAIL' as const,
+      description: 'Fast, customized transactional emails via Mandrill SMTP relay.',
+      logo: '/providers/mailchimp.svg',
+      status: 'ACTIVE' as const,
+      is_default: true,
+      documentation_url: 'https://mailchimp.com/developer/transactional/docs/smtp-integration/',
+      configuration_schema: {
+        type: 'object',
+        required: ['host', 'port', 'auth_user', 'auth_password'],
+        properties: {
+          host: { type: 'string', title: 'Mandrill Host', default: 'smtp.mandrillapp.com' },
+          port: { type: 'number', title: 'Port', default: 587 },
+          auth_user: { type: 'string', title: 'Mandrill Username' },
+          auth_password: { type: 'string', title: 'Mandrill API Key', format: 'password' },
+        },
+      },
+      form_fields: [
+        { name: 'host', label: 'Mandrill SMTP Host', type: 'text', placeholder: 'smtp.mandrillapp.com', default_value: 'smtp.mandrillapp.com', required: true },
+        { name: 'port', label: 'Port', type: 'number', placeholder: '587', default_value: 587, required: true },
+        { name: 'auth_user', label: 'Account Email / Username', type: 'text', placeholder: 'admin@acme.com', required: true },
+        { name: 'auth_password', label: 'Mandrill API Key', type: 'password', placeholder: '••••••••', required: true, description: 'Any active Mandrill API key can be used as the SMTP password' },
+      ],
+    },
+    {
+      name: 'Brevo (Sendinblue)',
+      slug: 'brevo',
+      type: 'EMAIL' as const,
+      description: 'All-in-one marketing and transactional email delivery via Brevo SMTP relay.',
+      logo: '/providers/brevo.svg',
+      status: 'ACTIVE' as const,
+      is_default: true,
+      documentation_url: 'https://help.brevo.com/hc/en-us/articles/209467405-What-is-Brevo-SMTP',
+      configuration_schema: {
+        type: 'object',
+        required: ['host', 'port', 'auth_user', 'auth_password'],
+        properties: {
+          host: { type: 'string', title: 'Brevo Host', default: 'smtp-relay.brevo.com' },
+          port: { type: 'number', title: 'Port', default: 587 },
+          auth_user: { type: 'string', title: 'Brevo Login' },
+          auth_password: { type: 'string', title: 'SMTP Key', format: 'password' },
+        },
+      },
+      form_fields: [
+        { name: 'host', label: 'Brevo SMTP Host', type: 'text', placeholder: 'smtp-relay.brevo.com', default_value: 'smtp-relay.brevo.com', required: true },
+        { name: 'port', label: 'Port', type: 'number', placeholder: '587', default_value: 587, required: true },
+        { name: 'auth_user', label: 'Brevo Login Email', type: 'text', placeholder: 'login@domain.com', required: true },
+        { name: 'auth_password', label: 'SMTP Master Key', type: 'password', placeholder: '••••••••', required: true },
+      ],
+    },
+    {
+      name: 'Postmark',
+      slug: 'postmark',
+      type: 'EMAIL' as const,
+      description: 'Lightning fast email delivery service specialized for transactional messages.',
+      logo: '/providers/postmark.svg',
+      status: 'ACTIVE' as const,
+      is_default: true,
+      documentation_url: 'https://postmarkapp.com/developer/user-guide/send-email-with-smtp',
+      configuration_schema: {
+        type: 'object',
+        required: ['host', 'port', 'auth_user', 'auth_password'],
+        properties: {
+          host: { type: 'string', title: 'Postmark Host', default: 'smtp.postmarkapp.com' },
+          port: { type: 'number', title: 'Port', default: 587 },
+          auth_user: { type: 'string', title: 'Server API Token' },
+          auth_password: { type: 'string', title: 'Server API Token', format: 'password' },
+        },
+      },
+      form_fields: [
+        { name: 'host', label: 'Postmark SMTP Host', type: 'text', placeholder: 'smtp.postmarkapp.com', default_value: 'smtp.postmarkapp.com', required: true },
+        { name: 'port', label: 'Port', type: 'number', placeholder: '587', default_value: 587, required: true },
+        { name: 'auth_user', label: 'Server API Token', type: 'text', placeholder: '25b3...-....-....-....-..........', required: true, description: 'Postmark Server API Token is used as both username and password' },
+        { name: 'auth_password', label: 'Server API Token', type: 'password', placeholder: '••••••••', required: true },
+      ],
+    },
+    {
+      name: 'Resend',
+      slug: 'resend',
+      type: 'EMAIL' as const,
+      description: 'Modern email platform with first-class React Email and SMTP support.',
+      logo: '/providers/resend.svg',
+      status: 'ACTIVE' as const,
+      is_default: true,
+      documentation_url: 'https://resend.com/docs/dashboard/emails/smtp',
+      configuration_schema: {
+        type: 'object',
+        required: ['host', 'port', 'auth_user', 'auth_password'],
+        properties: {
+          host: { type: 'string', title: 'Resend Host', default: 'smtp.resend.com' },
+          port: { type: 'number', title: 'Port', default: 465 },
+          auth_user: { type: 'string', title: 'Username (resend)', default: 'resend' },
+          auth_password: { type: 'string', title: 'Resend API Key (re_...)', format: 'password' },
+        },
+      },
+      form_fields: [
+        { name: 'host', label: 'Resend SMTP Host', type: 'text', placeholder: 'smtp.resend.com', default_value: 'smtp.resend.com', required: true },
+        { name: 'port', label: 'Port (SSL: 465, TLS: 587)', type: 'number', placeholder: '465', default_value: 465, required: true },
+        { name: 'auth_user', label: 'Username', type: 'text', placeholder: 'resend', default_value: 'resend', required: true, description: 'Always "resend" for Resend SMTP' },
+        { name: 'auth_password', label: 'Resend API Key', type: 'password', placeholder: 're_1234567890abcdef', required: true, description: 'Your Resend API Key' },
+      ],
+    },
+  ];
+
+  for (const p of providers) {
+    await prisma.provider.create({
+      data: {
+        name: p.name,
+        slug: p.slug,
+        type: p.type,
+        description: p.description,
+        logo: p.logo,
+        status: p.status,
+        is_default: p.is_default,
+        documentation_url: p.documentation_url,
+        configuration_schema: p.configuration_schema,
+        form_fields: p.form_fields,
+      },
+    });
+  }
+
+  // 9. Seed Initial Email Template
+  await prisma.emailTemplate.create({
+    data: {
+      user_uuid: superAdmin.user_uuid,
+      name: 'Welcome Onboarding Email',
+      description: 'Standard welcome email sent to newly registered platform members',
+      subject: 'Welcome to {{app_name}}, {{user_name}}!',
+      html_content: `<div style="font-family: sans-serif; padding: 20px; color: #1e293b;">
+  <h2 style="color: #4f46e5;">Welcome to {{app_name}}!</h2>
+  <p>Hello <strong>{{user_name}}</strong>,</p>
+  <p>Thank you for joining our platform. Your account has been provisioned and is ready for use.</p>
+  <p style="margin: 25px 0;">
+    <a href="{{login_url}}" style="background: #4f46e5; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 6px;">Sign In to Dashboard</a>
+  </p>
+  <p style="font-size: 12px; color: #64748b;">If you did not create this account, please ignore this email.</p>
+</div>`,
+      text_content: 'Welcome to {{app_name}}! Hello {{user_name}}, please log in at {{login_url}}.',
+      variables: ['app_name', 'user_name', 'login_url'],
+      is_active: true,
     },
   });
 

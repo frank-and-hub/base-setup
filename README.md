@@ -43,6 +43,7 @@ version-0.0.1/
 │   │   │   ├── app/
 │   │   │   │   ├── admin/           # Admin Panel (Role Guarded: SUPER_ADMIN, ADMIN, MODERATOR)
 │   │   │   │   │   ├── dashboard/   # Module 1: System overview & metrics
+│   │   │   │   │   ├── messaging/   # Multi-Provider Messaging Platform (Phase 1: Email)
 │   │   │   │   │   ├── roles/       # Module 2: Roles & permissions management
 │   │   │   │   │   ├── users/       # Module 3: Full user management data table
 │   │   │   │   │   ├── moderators/  # Module 4: Moderator management
@@ -406,3 +407,41 @@ pnpm mobile:build:apk
 #### Issue 5: Expo Prebuild / Metro Build Error in Mobile
 * **Symptom:** `Error: Unable to resolve module @babel/runtime/helpers/...`
 * **Fix:** Ensure `babel-preset-expo: ~12.0.12` and `@babel/runtime: ^7.25.0` are present in `apps/mobile/package.json` and `apps/mobile/babel.config.js` exists. Both are pre-configured.
+
+---
+
+### 11. Multi-Provider Messaging Platform (Phase 1: Email)
+
+The platform provides a scalable, enterprise multi-tenant messaging router with credential encryption, dynamic configuration schemas, templating engine, and Valkey background queues.
+
+#### Architecture Highlights
+1. **Global Provider Registry (`providers` table):**
+   - Seeded with 8 initial providers (`smtp`, `sendgrid`, `amazon-ses`, `mailgun`, `mailchimp-transactional`, `brevo`, `postmark`, `resend`).
+   - Phase 1 delivers fully operational adapters for **SMTP** (RFC 5321/5322 socket/TLS engine) and **SendGrid** (v3 REST API).
+   - Remaining providers are cataloged in `COMING_SOON` status for future phases.
+2. **Multi-Tenant Encrypted Credentials (`user_provider_configurations` table):**
+   - AES-256-GCM symmetric encryption with randomized 16-byte initialization vectors and auth tags.
+   - Plaintext credentials and secrets are stripped and masked before serialization to API responses.
+   - Per-user configuration isolation with default provider selection.
+3. **Template Engine (`email_templates` table):**
+   - Dynamic `{{variable}}` token extraction and handlebar interpolation for subjects and HTML bodies.
+4. **Valkey Background Queue & Exponential Backoff (`EmailQueueService` & `EmailWorkerService`):**
+   - High-throughput asynchronous dispatching via Valkey atomic `LPUSH` / `RPOPLPUSH`.
+   - Automatic retry handling with dead-letter queue (DLQ) support.
+5. **Dynamic Schema-Driven UI (`/admin/messaging`):**
+   - Dynamic configuration forms rendered directly from database schemas.
+   - Real-time connection testing, interactive composer with template preview, and delivery logs.
+
+#### API Endpoints
+* `GET /api/messaging/stats`: Overview metrics (total sent, delivered %, queued, failed).
+* `GET /api/messaging/providers`: List available global providers with form field schemas.
+* `GET /api/messaging/configurations`: List current user's encrypted configurations.
+* `POST /api/messaging/configurations`: Add new encrypted configuration.
+* `POST /api/messaging/configurations/:uuid/test`: Test connection with provider server/API.
+* `POST /api/messaging/configurations/:uuid/default`: Set provider configuration as channel default.
+* `DELETE /api/messaging/configurations/:uuid`: Soft-delete provider configuration.
+* `GET /api/messaging/templates`: List available email templates.
+* `POST /api/messaging/templates`: Create new customizable email template.
+* `POST /api/messaging/emails/send`: Dispatch email synchronously or enqueue in Valkey queue.
+* `GET /api/messaging/emails`: Paginated delivery logs with recipient status and error tracking.
+

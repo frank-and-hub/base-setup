@@ -136,7 +136,7 @@ export default function AdminProfilePage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Account Summary Card */}
         <div className="space-y-6 lg:col-span-1">
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center text-center">
+          <div className="bg-white p-6 rounded-xl border border-slate-200 btn hadow-sm flex flex-col items-center text-center">
             <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold shadow-md mb-4 overflow-hidden">
               {profilePictureUrl ? (
                 <img
@@ -182,7 +182,7 @@ export default function AdminProfilePage() {
           </div>
 
           {/* Granular Permissions Card */}
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <div className="bg-white p-6 rounded-xl border border-slate-200 btn hadow-sm">
             <div className="flex items-center gap-2 mb-3">
               <Shield className="w-4 h-4 text-indigo-600" />
               <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
@@ -213,7 +213,7 @@ export default function AdminProfilePage() {
         {/* Right Column: Forms */}
         <div className="space-y-6 lg:col-span-2">
           {/* Profile Form */}
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <div className="bg-white p-6 rounded-xl border border-slate-200 btn hadow-sm">
             <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
               <UserIcon className="w-4 h-4 text-indigo-600" />
               <h2 className="text-base font-bold text-slate-900">
@@ -346,7 +346,7 @@ export default function AdminProfilePage() {
           </div>
 
           {/* Password Change Form */}
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <div className="bg-white p-6 rounded-xl border border-slate-200 btn hadow-sm">
             <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
               <KeyRound className="w-4 h-4 text-indigo-600" />
               <h2 className="text-base font-bold text-slate-900">

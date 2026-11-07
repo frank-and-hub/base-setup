@@ -37,6 +37,9 @@ model User {
   refresh_tokens         RefreshToken[]
   activity_logs          UserActivityLog[]  @relation("TargetUser")
   actor_activity_logs    UserActivityLog[]  @relation("ActorUser")
+  provider_configurations UserProviderConfiguration[]
+  email_templates        EmailTemplate[]
+  email_messages         EmailMessage[]
   created_at             DateTime           @default(now()) @map("created_at")
   updated_at             DateTime           @updatedAt @map("updated_at")
 
@@ -163,3 +166,184 @@ model Setting {
   @@index([category])
   @@map("settings")
 }
+
+// -----------------------------------------------------------------------------
+// Messaging Platform - Providers, Configurations, Templates & Delivery
+// -----------------------------------------------------------------------------
+
+enum MessagingChannel {
+  EMAIL
+  WHATSAPP
+  SMS
+}
+
+enum ProviderStatus {
+  ACTIVE
+  INACTIVE
+  DEPRECATED
+  COMING_SOON
+}
+
+enum MessageSendingStatus {
+  DRAFT
+  QUEUED
+  PROCESSING
+  ACCEPTED
+  DELIVERED
+  FAILED
+  BOUNCED
+  CANCELLED
+}
+
+model Provider {
+  provider_uuid        String                     @id @default(uuid()) @map("provider_uuid")
+  name                 String
+  slug                 String                     @unique
+  type                 MessagingChannel           @default(EMAIL)
+  description          String?
+  logo                 String?
+  configuration_schema Json                       @map("configuration_schema")
+  form_fields          Json                       @map("form_fields")
+  documentation_url    String?                    @map("documentation_url")
+  status               ProviderStatus             @default(ACTIVE)
+  is_default           Boolean                    @default(false) @map("is_default")
+  created_at           DateTime                   @default(now()) @map("created_at")
+  updated_at           DateTime                   @updatedAt @map("updated_at")
+  deleted_at           DateTime?                  @map("deleted_at")
+  user_configurations  UserProviderConfiguration[]
+  email_messages       EmailMessage[]
+
+  @@index([slug])
+  @@index([type])
+  @@index([status])
+  @@map("providers")
+}
+
+model UserProviderConfiguration {
+  configuration_uuid String           @id @default(uuid()) @map("configuration_uuid")
+  user_uuid          String           @map("user_uuid")
+  user               User             @relation(fields: [user_uuid], references: [user_uuid], onDelete: Cascade)
+  provider_uuid      String           @map("provider_uuid")
+  provider           Provider         @relation(fields: [provider_uuid], references: [provider_uuid], onDelete: Restrict)
+  configuration_name String           @map("configuration_name")
+  type               MessagingChannel @default(EMAIL)
+  credentials        String           // Encrypted JSON ciphertext with IV/tag
+  sender_name        String           @map("sender_name")
+  sender_email       String           @map("sender_email")
+  reply_to           String?          @map("reply_to")
+  is_active          Boolean          @default(true) @map("is_active")
+  is_verified        Boolean          @default(false) @map("is_verified")
+  is_default         Boolean          @default(false) @map("is_default")
+  last_tested_at     DateTime?        @map("last_tested_at")
+  last_error         String?          @map("last_error")
+  created_at         DateTime         @default(now()) @map("created_at")
+  updated_at         DateTime         @updatedAt @map("updated_at")
+  deleted_at         DateTime?        @map("deleted_at")
+  email_messages     EmailMessage[]
+
+  @@index([user_uuid])
+  @@index([provider_uuid])
+  @@index([type])
+  @@index([is_active])
+  @@index([is_default])
+  @@map("user_provider_configurations")
+}
+
+model EmailTemplate {
+  template_uuid  String         @id @default(uuid()) @map("template_uuid")
+  user_uuid      String         @map("user_uuid")
+  user           User           @relation(fields: [user_uuid], references: [user_uuid], onDelete: Cascade)
+  name           String
+  description    String?
+  subject        String
+  html_content   String         @map("html_content")
+  text_content   String?        @map("text_content")
+  variables      Json           @default("[]")
+  is_active      Boolean        @default(true) @map("is_active")
+  created_at     DateTime       @default(now()) @map("created_at")
+  updated_at     DateTime       @updatedAt @map("updated_at")
+  deleted_at     DateTime?      @map("deleted_at")
+  email_messages EmailMessage[]
+
+  @@index([user_uuid])
+  @@index([is_active])
+  @@map("email_templates")
+}
+
+model EmailMessage {
+  message_uuid       String                    @id @default(uuid()) @map("message_uuid")
+  user_uuid          String                    @map("user_uuid")
+  user               User                      @relation(fields: [user_uuid], references: [user_uuid], onDelete: Cascade)
+  provider_uuid      String?                   @map("provider_uuid")
+  provider           Provider?                 @relation(fields: [provider_uuid], references: [provider_uuid], onDelete: SetNull)
+  configuration_uuid String?                   @map("configuration_uuid")
+  configuration      UserProviderConfiguration? @relation(fields: [configuration_uuid], references: [configuration_uuid], onDelete: SetNull)
+  template_uuid      String?                   @map("template_uuid")
+  template           EmailTemplate?            @relation(fields: [template_uuid], references: [template_uuid], onDelete: SetNull)
+  sender_name        String                    @map("sender_name")
+  sender_email       String                    @map("sender_email")
+  reply_to           String?                   @map("reply_to")
+  subject            String
+  html_content       String                    @map("html_content")
+  text_content       String?                   @map("text_content")
+  status             MessageSendingStatus      @default(QUEUED)
+  provider_message_id String?                  @map("provider_message_id")
+  attempts           Int                       @default(0)
+  max_attempts       Int                       @default(3) @map("max_attempts")
+  last_error         String?                   @map("last_error")
+  sent_at            DateTime?                 @map("sent_at")
+  delivered_at       DateTime?                 @map("delivered_at")
+  metadata           Json?                     @default("{}")
+  idempotency_key    String?                   @unique @map("idempotency_key")
+  created_at         DateTime                  @default(now()) @map("created_at")
+  updated_at         DateTime                  @updatedAt @map("updated_at")
+  attachments        EmailAttachment[]
+  recipients         MessageRecipient[]
+
+  @@index([user_uuid])
+  @@index([status])
+  @@index([created_at])
+  @@index([provider_uuid])
+  @@index([configuration_uuid])
+  @@map("email_messages")
+}
+
+enum RecipientType {
+  TO
+  CC
+  BCC
+}
+
+model MessageRecipient {
+  recipient_uuid String               @id @default(uuid()) @map("recipient_uuid")
+  message_uuid   String               @map("message_uuid")
+  message        EmailMessage         @relation(fields: [message_uuid], references: [message_uuid], onDelete: Cascade)
+  email          String
+  name           String?
+  type           RecipientType        @default(TO)
+  status         MessageSendingStatus @default(QUEUED)
+  error_details  String?              @map("error_details")
+  delivered_at   DateTime?            @map("delivered_at")
+
+  @@index([message_uuid])
+  @@index([email])
+  @@index([type])
+  @@index([status])
+  @@map("message_recipients")
+}
+
+model EmailAttachment {
+  attachment_uuid String       @id @default(uuid()) @map("attachment_uuid")
+  message_uuid    String       @map("message_uuid")
+  message         EmailMessage @relation(fields: [message_uuid], references: [message_uuid], onDelete: Cascade)
+  filename        String
+  content_type    String       @map("content_type")
+  size_bytes      Int          @map("size_bytes")
+  content_base64  String?      @map("content_base64")
+  storage_url     String?      @map("storage_url")
+  created_at      DateTime     @default(now()) @map("created_at")
+
+  @@index([message_uuid])
+  @@map("email_attachments")
+}
+

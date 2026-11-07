@@ -24,19 +24,19 @@ export function AdminTopbar({ onMobileOpen }: AdminTopbarProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const roleVariant =
-    user?.role === 'SUPER_ADMIN'
-      ? 'indigo'
-      : user?.role === 'ADMIN'
-      ? 'blue'
-      : user?.role === 'MODERATOR'
-      ? 'amber'
-      : 'slate';
+    user?.role === "SUPER_ADMIN"
+      ? "indigo"
+      : user?.role === "ADMIN"
+        ? "blue"
+        : user?.role === "MODERATOR"
+          ? "amber"
+          : "slate";
 
-  const firstName = user?.firstName || user?.first_name || 'Admin';
-  const lastName = user?.lastName || user?.last_name || 'User';
+  const firstName = user?.firstName || user?.first_name || "Admin";
+  const lastName = user?.lastName || user?.last_name || "User";
 
   return (
-    <header className="sticky top-0 z-20 flex items-center justify-between h-16 px-4 sm:px-6 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-200 shadow-sm transition-colors">
+    <header className="sticky top-0 z-20 flex items-center justify-between h-16 px-4 sm:px-6 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-200 btn hadow-sm transition-colors">
       {/* Left: Mobile Toggle & Page Title */}
       <div className="flex items-center gap-3">
         <button
@@ -87,7 +87,7 @@ export function AdminTopbar({ onMobileOpen }: AdminTopbarProps) {
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className="flex items-center gap-2.5 p-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left focus:outline-none"
           >
-            <div className="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-sm">
+            <div className="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0 btn hadow-sm">
               {firstName[0]}
               {lastName[0]}
             </div>

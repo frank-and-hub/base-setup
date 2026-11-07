@@ -258,7 +258,7 @@ export default function SettingsPage() {
       )}
 
       {/* Super Admin System-Wide Theme Configuration Card (Requirement 10.4) */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-200 rounded-2xl p-6 shadow-sm">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-200 rounded-2xl p-6 btn hadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-200">
           <div>
             <div className="flex items-center gap-2">
@@ -416,7 +416,7 @@ export default function SettingsPage() {
               onClick={() => setActiveCategory(cat)}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 activeCategory === cat
-                  ? "bg-indigo-600 text-white shadow-sm"
+                  ? "bg-indigo-600 text-white btn hadow-sm"
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
               }`}
             >
@@ -459,7 +459,7 @@ export default function SettingsPage() {
             return (
               <div
                 key={settingId}
-                className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-200 shadow-sm flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+                className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-200 btn hadow-sm flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-2">

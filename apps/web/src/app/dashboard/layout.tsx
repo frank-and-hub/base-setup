@@ -19,7 +19,7 @@ export default function UserDashboardLayout({
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push('/login');
+      router.push("/login");
     }
   }, [isLoading, isAuthenticated, router]);
 
@@ -42,7 +42,7 @@ export default function UserDashboardLayout({
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors">
       {/* Top Navbar */}
-      <header className="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-200 shadow-sm transition-colors">
+      <header className="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-200 btn hadow-sm transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Left: Brand */}
@@ -51,7 +51,7 @@ export default function UserDashboardLayout({
                 href="/dashboard"
                 className="flex items-center gap-2.5 font-bold text-slate-900 dark:text-white"
               >
-                <div className="p-2 bg-indigo-600 text-white rounded-xl shadow-sm">
+                <div className="p-2 bg-indigo-600 text-white rounded-xl btn hadow-sm">
                   <Layers className="w-5 h-5" />
                 </div>
                 <span>Member Portal</span>

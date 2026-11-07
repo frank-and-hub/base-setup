@@ -207,7 +207,7 @@ export function AdminSidebar({
                             className={cn(
                               "flex items-center gap-2.5 px-3 py-1.5 text-xs rounded-md transition-colors",
                               isChildActive
-                                ? "bg-indigo-400 text-white font-medium shadow-sm"
+                                ? "bg-indigo-400 text-white font-medium btn hadow-sm"
                                 : "text-slate-400 hover:text-white hover:bg-slate-800/40",
                             )}
                           >
@@ -230,7 +230,7 @@ export function AdminSidebar({
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 text-xs font-medium rounded-lg transition-colors",
                   isActive
-                    ? "bg-indigo-400 text-white font-semibold shadow-sm btn"
+                    ? "bg-indigo-400 text-white font-semibold btn hadow-sm btn"
                     : "text-slate-400 hover:text-white hover:bg-slate-800/50",
                 )}
                 title={isCollapsed ? item.label : undefined}

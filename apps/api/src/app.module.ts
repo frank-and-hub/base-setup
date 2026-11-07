@@ -13,6 +13,7 @@ import { ActivityModule } from './activity/activity.module';
 import { SettingsModule } from './settings/settings.module';
 import { HealthModule } from './health/health.module';
 import { GraphifyModule } from './graphify/graphify.module';
+import { MessagingModule } from './messaging/messaging.module';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
 
 @Module({
@@ -43,6 +44,7 @@ import { CorrelationIdMiddleware } from './common/middleware/correlation-id.midd
     SettingsModule,
     HealthModule,
     GraphifyModule,
+    MessagingModule,
   ],
 })
 export class AppModule implements NestModule {
