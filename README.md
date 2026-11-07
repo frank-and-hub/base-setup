@@ -8,10 +8,11 @@ A production-ready full-stack monorepo featuring **Next.js 15+ (App Router)**, *
 
 ```mermaid
 flowchart TD
-    subgraph Client ["Frontend Tier (Next.js 15)"]
-        AdminUI["Admin Panel (/admin/*)<br/>• Dynamic DB Sidebar<br/>• 11 Admin Modules<br/>• Server-Side DataTables"]
+    subgraph Client ["Frontend Tier (Next.js 15 & React Native)"]
+        AdminUI["Admin Panel (/admin/*)<br/>• Dynamic DB Sidebar<br/>• 12 Admin Modules<br/>• Server-Side DataTables"]
         UserUI["Member Portal (/dashboard/*)<br/>• Personal Overview<br/>• Activity Feed<br/>• Profile & Security"]
         AuthUI["Auth Gateway (/login & /register)<br/>• Auto Role Redirection<br/>• Social Auth Framework"]
+        MobileApp["Mobile App (Expo 52 / React Native 0.76)<br/>• iOS & Android Client<br/>• Unified UI & Shared Tokens"]
     end
 
     subgraph Gateway ["Backend Tier (NestJS 10 REST API)"]
@@ -19,8 +20,8 @@ flowchart TD
     end
 
     subgraph DataTier ["Multi-Model Storage Tier"]
-        PG[("PostgreSQL 16 (Port 5432)<br/>Prisma ORM • UUID Primary Keys<br/>• users, roles, permissions<br/>• menu_items (nested sidebar tree)<br/>• audit_logs (structured diffs)<br/>• user_activity_logs, settings")]
-        Mongo[("MongoDB 7 (Port 27017)<br/>Mongoose ODM<br/>• application_error_logs<br/>• Uncaught exceptions & stack traces<br/>• HTTP request context")]
+        PG[("PostgreSQL 16 (Port 5433)<br/>Prisma ORM • UUID Primary Keys<br/>• users, roles, permissions<br/>• menu_items (nested sidebar tree)<br/>• audit_logs (structured diffs)<br/>• user_activity_logs, settings")]
+        Mongo[("MongoDB 7 (Port 27018)<br/>Mongoose ODM<br/>• application_error_logs<br/>• Uncaught exceptions & stack traces<br/>• HTTP request context")]
         Valkey[("Valkey / Redis 8 (Port 6379)<br/>ioredis<br/>• Instant JWT Blacklisting<br/>• Sliding Window Rate Limiting<br/>• Active session invalidation")]
     end
 
@@ -35,9 +36,9 @@ flowchart TD
 ## 📁 Monorepo Structure
 
 ```text
-my-monorepo/
+version-0.0.1/
 ├── apps/
-│   ├── web/                         # Next.js 15+ App Router frontend
+│   ├── web/                         # Next.js 15+ App Router web application
 │   │   ├── src/
 │   │   │   ├── app/
 │   │   │   │   ├── admin/           # Admin Panel (Role Guarded: SUPER_ADMIN, ADMIN, MODERATOR)
@@ -64,7 +65,7 @@ my-monorepo/
 │   │   │   ├── components/
 │   │   │   │   ├── data-table/      # Reusable generic DataTable component
 │   │   │   │   ├── layout/          # AdminSidebar, AdminTopbar
-│   │   │   │   ├── ui/              # Reusable Button, Modal, Badge, Card, Breadcrumbs, etc.
+│   │   │   │   ├── ui/              # Reusable Button, Modal, Badge, Card, Breadcrumbs, Input, etc.
 │   │   │   │   └── users/           # UserFormModal, DeleteUserModal
 │   │   │   ├── context/             # AuthContext (Role redirection & session management)
 │   │   │   └── lib/                 # ApiClient with automatic token refresh
@@ -106,10 +107,11 @@ my-monorepo/
 ├── packages/
 │   ├── shared-types/                # TypeScript interfaces, enums, DTOs, and contracts
 │   ├── shared-utils/                # Menu tree builders, circular checks, redaction, pagination
+│   ├── ui/                          # Shared component contracts and design tokens (Button, Badge, Input, Card)
 │   ├── validation/                  # Zod validation schemas
 │   └── config/                      # Base TypeScript & configuration packages
 │
-├── docker-compose.yml               # PostgreSQL, MongoDB, and Valkey containers
+├── docker-compose.yml               # PostgreSQL (5433), MongoDB (27018), and Valkey (6379)
 ├── pnpm-workspace.yaml              # pnpm workspace definition
 ├── package.json                     # Monorepo scripts (dev, build, test, db:seed)
 ├── tsconfig.base.json
@@ -129,7 +131,7 @@ SUPER_ADMIN (Bypasses individual permissions; Full control)
              └── USER (Isolated to personal member endpoints)
 ```
 
-### 1. Granular Permission Matrix (12 Standard Permissions)
+### Granular Permission Matrix (12 Standard Permissions)
 - `users.read`: View users and user profiles
 - `users.create`: Provision new accounts
 - `users.update`: Modify existing user attributes and statuses
@@ -143,105 +145,15 @@ SUPER_ADMIN (Bypasses individual permissions; Full control)
 - `settings.manage`: Modify default system settings
 - `moderators.manage`: Provision and manage moderator privileges
 
-### 2. Security Safeguards & Enforcement
-- **Backend-First Authorization:** Every protected NestJS endpoint enforces `JwtAuthGuard`, `RolesGuard`, and `PermissionsGuard`. Hiding a frontend sidebar item is never treated as security.
-- **Protection of Last Active Super Admin:** Attempting to delete, deactivate, or demote the last remaining active Super Admin returns an explicit HTTP 400 rejection.
-- **Privilege Escalation Prevention:** Administrators cannot grant themselves or others privileges they do not possess.
-- **Auditing & Correlation:** Every request receives an `x-correlation-id` header passed into structured audit logs and MongoDB error telemetry.
-- **Automatic Sanitization:** All sensitive credentials (`password`, `accessToken`, `refreshToken`, `client_secret`) are automatically redacted before logging.
-
 ---
 
 ## 🗄️ Polyglot Database Storage Strategy
 
-| Storage Engine | Technology | Role in System | What Is Stored Here |
-| :--- | :--- | :--- | :--- |
-| **Relational Database** | **PostgreSQL 16** (Prisma ORM) | Primary ACID Store | `users`, `roles`, `permissions`, `menu_items`, `audit_logs`, `user_activity_logs`, `settings`, `refresh_tokens`. |
-| **Document Database** | **MongoDB 7** (Mongoose ODM) | Unstructured Telemetry | `application_error_logs` (captures uncaught exceptions, stack traces, and dynamic HTTP request payloads). |
-| **In-Memory Cache** | **Valkey 8** (ioredis) | Ephemeral Speed Tier | Revoked JWT blacklist, sliding window rate-limiting counters, and session state. |
-
----
-
-## 🖥️ Admin Navigation Modules & User Experience
-
-### 12 Admin Navigation Modules (`/admin/*`)
-1. **Dashboard (`/admin/dashboard`):** System metrics, 7-day registration trends, active vs. inactive users, and service health indicators.
-2. **Role & Permission Management (`/admin/roles`):** Matrix of roles and the 12 granular permissions with real-time toggle updates.
-3. **User Management (`/admin/users`):** Full CRUD data table, server pagination, sorting, status/role filtering, and Super Admin activity history modal.
-4. **Moderator Management (`/admin/moderators`):** Dedicated view for moderator oversight and permission tuning.
-5. **Navigation Management (`/admin/navigation`):** Tree manager for dynamic PostgreSQL sidebar items with circular reference prevention.
-6. **Audit Logs (`/admin/audit-logs`):** Structured PostgreSQL logs showing state transitions (Before vs. After JSON diff viewer).
-7. **User Activity Logs (`/admin/activity-logs`):** Real-time tracking of logins, logouts, profile changes, and administrative actions with IP attribution.
-8. **Application Error Logs (`/admin/error-logs`):** MongoDB telemetry viewer with status code badges and formatted stack trace modal.
-9. **Default Settings (`/admin/settings`):** Category-grouped system settings with inline editing and JSON validation.
-10. **Profile Management (`/admin/profile`):** Personal administrative details and verified password change.
-11. **System Health & Monitoring (`/admin/health`):** Live latency and heartbeat probes for PostgreSQL, MongoDB, Valkey, and API uptime with 5s polling.
-12. **Codebase Knowledge Graph (`/admin/knowledge-graph`):** Interactive AST topology viewer, BFS dependency path tracer, call-flow sequences, and live graph metrics.
-
-### Member Portal (`/dashboard/*`)
-- **Dashboard Overview (`/dashboard`):** Welcome banner, security summary, and personal activity feed (`GET /api/activity-logs/me`).
-- **Profile & Security (`/dashboard/profile`):** Personal contact information update and secure password change.
-
----
-
-## 📱 Cross-Platform Mobile Application (`apps/mobile`)
-
-The monorepo contains a **React Native (Expo SDK 52+)** mobile application for iOS and Android, sharing 100% of the TypeScript interfaces, Zod validation schemas, and API contracts with the web frontend.
-
-### 1. Parity & Architecture Symmetry
-- **Shared Contracts:** Consumes `@monorepo/shared-types` (Auth, User, Role DTOs) and `@monorepo/validation` (Zod login and register form schemas).
-- **Identical API Calls:** Communicates with the same NestJS backend endpoints (`/api/auth/*`, `/api/users/*`, `/api/roles/*`, `/api/activity-logs/*`, `/api/health`, `/api/graphify/stats`) with automatic JWT bearer token attachment and refresh logic.
-- **Role-Based Routing:**
-  - `USER`: Redirects to the mobile Member Portal with personal security overview and activity stream.
-  - `SUPER_ADMIN`, `ADMIN`, `MODERATOR`: Redirects to the mobile Admin Console with live system metrics, user table, role matrix, and health probes.
-- **Storage & Security:** Uses `expo-secure-store` to keep access and refresh tokens safely stored in Android KeyStore and iOS Keychain.
-- **Dynamic Server Host Config:** Includes an in-app Server Host modal allowing developers to switch between `10.0.2.2` (Android emulator), `localhost` (iOS simulator), and local WiFi LAN IP (`192.168.x.x`) for physical device testing without recompiling.
-
-### 2. Mobile CLI Scripts
-```bash
-pnpm mobile             # Start Expo Metro development server
-pnpm mobile:android     # Launch in Android emulator / connected device
-pnpm mobile:ios         # Launch in iOS simulator
-pnpm mobile:web         # Run mobile layout in web browser
-pnpm mobile:build:apk   # Prebuild and generate standalone release Android APK (.apk)
-```
-
-### 3. Automated Android APK CI/CD
-The monorepo includes [`.github/workflows/mobile-apk.yml`](file:///.github/workflows/mobile-apk.yml). On push to `main` or manual trigger (`workflow_dispatch`), GitHub Actions compiles the Android release APK and publishes it as a downloadable artifact.
-
----
-
-## 🧠 Graphify Codebase Knowledge Graph & AST Architecture Intelligence
-
-The monorepo includes **Graphify** (`Graphify-Labs/graphify`) integration across all layers (CLI, Antigravity AI assistant, NestJS REST API, and Next.js Admin UI):
-
-- **AST Parsing Engine:** Tree-Sitter AST parsers for TypeScript, JavaScript, and SQL. Extracts functions, classes, decorators, schema models, imports, and cross-package references.
-- **Knowledge Topology:** 1,127 nodes, 2,415 edges, and 63 modular communities with a 39.0x token reduction efficiency.
-- **Dedicated NestJS Module (`GraphifyModule`):**
-  - `GET /api/graphify/stats` - Graph summary, node counts, community distribution, top architectural hubs.
-  - `GET /api/graphify/search?q=<query>` - Substring and fuzzy node symbol search.
-  - `GET /api/graphify/node/:id` - Detailed symbol inspection with incoming & outgoing edges.
-  - `GET /api/graphify/path?from=<nodeA>&to=<nodeB>` - Breadth-First-Search (BFS) shortest path tracer.
-  - `POST /api/graphify/refresh` - On-demand AST graph re-extraction.
-- **Interactive Admin UI (`/admin/knowledge-graph`):**
-  - **Force-Directed Graph Viewer:** Embedded interactive D3/SVG graph canvas.
-  - **Symbol & Path Explorer:** Interactive source-to-target path tracer and relationship inspector.
-  - **Mermaid Call-Flow Diagrams:** Visualized architectural call sequence diagrams.
-  - **Collapsible File & Symbol Tree:** Hierarchical monorepo code structure view.
-- **Documentation & Obsidian Vault:**
-  - 73 detailed wiki articles in `graphify-out/wiki/`.
-  - Comprehensive Obsidian vault in `graphify-out/obsidian/` with canvas support.
-- **Git Lifecycle Automation:**
-  - Automated `post-commit`, `post-checkout`, `post-merge`, and `post-rewrite` hooks.
-  - Custom git merge driver for `graphify-out/graph.json` to prevent merge conflicts.
-- **CLI Scripts:**
-  ```bash
-  pnpm graphify          # Re-extract AST and rebuild knowledge graph
-  pnpm graphify:export   # Export HTML visualization, tree view, and callflow diagrams
-  pnpm graphify:tree     # Generate collapsible dependency tree
-  pnpm graphify:callflow # Generate Mermaid call-flow sequences
-  pnpm graphify:benchmark# Measure AST extraction benchmarks
-  ```
+| Storage Engine | Technology | Port | Role in System | What Is Stored Here |
+| :--- | :--- | :--- | :--- | :--- |
+| **Relational Database** | **PostgreSQL 16** (Prisma ORM) | `5433` | Primary ACID Store | `users`, `roles`, `permissions`, `menu_items`, `audit_logs`, `user_activity_logs`, `settings`, `refresh_tokens`. |
+| **Document Database** | **MongoDB 7** (Mongoose ODM) | `27018` | Unstructured Telemetry | `application_error_logs` (captures uncaught exceptions, stack traces, and dynamic HTTP request payloads). |
+| **In-Memory Cache** | **Valkey 8** (ioredis) | `6379` | Ephemeral Speed Tier | Revoked JWT blacklist, sliding window rate-limiting counters, and session state. |
 
 ---
 
@@ -261,48 +173,236 @@ All test accounts are seeded with pre-configured roles:
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Complete Step-by-Step Setup & Startup Guide
 
-### 1. Prerequisites
-- **Node.js** >= 20.x
-- **pnpm** >= 9.x (`npm install -g pnpm`)
-- **Docker** & **Docker Compose**
+Follow these instructions to start the entire project from scratch.
 
-### 2. Start Database Services
+### 1. Prerequisites & Required Dependencies
+
+Ensure you have the following installed on your machine:
+- **Node.js**: `>= 20.x` (Recommended: v20 LTS or v22 LTS)
+- **pnpm**: `>= 9.x` (Install globally via `npm install -g pnpm`)
+- **Docker & Docker Compose**: Docker Engine v24+ with Compose v2+
+- **Python**: `>= 3.11` (Optional: required for AST Graphify updates)
+- **Git**
+
+Verify your local versions:
 ```bash
+node -v
+pnpm -v
+docker compose version
+```
+
+---
+
+### 2. Installation & Workspace Setup
+
+Clone the repository and install all workspace dependencies across all applications and shared packages:
+
+```bash
+# 1. Clone repository
+git clone https://github.com/frank-and-hub/version-0.0.1.git
+cd version-0.0.1
+
+# 2. Install monorepo dependencies
+pnpm install
+```
+
+---
+
+### 3. Environment Variable Configuration
+
+Create your root `.env` file from the provided `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+Review or customize `.env` (default configured ports match Docker Compose):
+
+```ini
+# Environment Mode
+NODE_ENV=development
+
+# Frontend Configuration
+WEB_PORT=3000
+NEXT_PUBLIC_API_URL=http://localhost:4000/api
+
+# Backend Configuration
+API_PORT=4000
+API_GLOBAL_PREFIX=api
+CORS_ORIGIN=http://localhost:3000
+
+# PostgreSQL (Relational Data: Port 5433 mapped to container 5432)
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=monorepo_db
+POSTGRES_PORT=5433
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/monorepo_db?schema=public
+
+# MongoDB (Document Logs: Port 27018 mapped to container 27017)
+MONGO_INITDB_ROOT_USERNAME=root
+MONGO_INITDB_ROOT_PASSWORD=password
+MONGO_INITDB_DATABASE=monorepo_db
+MONGO_PORT=27018
+MONGODB_URI=mongodb://root:password@localhost:27018/monorepo_db?authSource=admin
+
+# Valkey / Redis (Port 6379)
+VALKEY_PORT=6379
+VALKEY_HOST=localhost
+VALKEY_PASSWORD=
+
+# JWT Authentication Secrets (Generate with: openssl rand -base64 32)
+JWT_ACCESS_SECRET=your_jwt_access_secret_super_secure_key_12345
+JWT_ACCESS_EXPIRES_IN=15m
+JWT_REFRESH_SECRET=your_jwt_refresh_secret_super_secure_key_67890
+JWT_REFRESH_EXPIRES_IN=7d
+```
+
+---
+
+### 4. Docker Compose Commands
+
+Start the database services in the background:
+
+```bash
+# Start all 3 database services (PostgreSQL, MongoDB, Valkey)
 docker compose up -d
+
+# Verify containers are healthy and running
 docker compose ps
 ```
 
-### 3. Initialize Database & Seed
+To stop or reset database services:
 ```bash
-# Push Prisma schema and seed default data
+# Stop containers
+docker compose down
+
+# Stop containers and erase data volumes (clean slate)
+docker compose down -v
+```
+
+---
+
+### 5. Database Setup, Migrations & Seeding
+
+Sync the database schema and populate all seed accounts, roles, permissions, dynamic menus, and system settings:
+
+```bash
+# 1. Build all shared packages (@monorepo/shared-types, @monorepo/ui, etc.)
+pnpm --filter "./packages/*" build
+
+# 2. Generate Prisma Client
+pnpm --filter api prisma:generate
+
+# 3. Push schema to PostgreSQL
 pnpm --filter api db:push
+
+# 4. Seed initial database records
 pnpm --filter api db:seed
 ```
 
-### 4. Run Development Servers
+---
+
+### 6. Development Startup Commands
+
+#### Option A: Start All Services Together (Recommended)
+Runs the NestJS backend and Next.js frontend concurrently in a single terminal with colored logs:
+
 ```bash
-# Concurrently starts NestJS API (Port 4000) and Next.js Frontend (Port 3000)
 pnpm dev
 ```
 
-### 5. Run Production Build
+#### Option B: Start Services Individually in Separate Terminals
 ```bash
-# Builds all shared packages, api, and web applications
-pnpm build
+# Terminal 1: Backend API (NestJS watch mode on Port 4000)
+pnpm dev:api
+
+# Terminal 2: Web Frontend (Next.js dev server on Port 3000)
+pnpm dev:web
+
+# Terminal 3: Mobile App (Expo Metro bundler)
+pnpm mobile
 ```
 
-### 6. Run Test Suite
+Once running, access the services:
+- **Web Frontend:** [http://localhost:3000](http://localhost:3000)
+- **NestJS REST API:** [http://localhost:4000/api](http://localhost:4000/api)
+- **Interactive Swagger Documentation:** [http://localhost:4000/docs](http://localhost:4000/docs)
+- **Service Health Check:** [http://localhost:4000/api/health](http://localhost:4000/api/health)
+
+---
+
+### 7. Production Build & Startup Commands
+
+To build and run the applications in production mode:
+
 ```bash
-# Executes unit tests for shared utilities and privilege hierarchy rules
+# 1. Build all packages and applications (Next.js + NestJS)
+pnpm build
+
+# 2. Start NestJS Backend in production mode
+pnpm --filter api start:prod
+
+# 3. Start Next.js Frontend in production mode
+pnpm --filter web start
+```
+
+---
+
+### 8. Testing
+
+Run all unit and integration test suites:
+
+```bash
 pnpm test
 ```
 
 ---
 
-## 🌐 Endpoints & Interactive Documentation
-- **Frontend Web App:** `http://localhost:3000`
-- **NestJS REST API:** `http://localhost:4000/api`
-- **Interactive Swagger Docs:** `http://localhost:4000/docs`
-- **Health Check Probe:** `http://localhost:4000/api/health`
+### 9. Mobile Application Commands (`apps/mobile`)
+
+```bash
+# Start Expo Metro development server
+pnpm mobile
+
+# Launch on connected Android device / emulator
+pnpm mobile:android
+
+# Launch on iOS simulator (macOS required)
+pnpm mobile:ios
+
+# Run mobile layout in desktop browser
+pnpm mobile:web
+
+# Prebuild native code and compile standalone Android release APK
+pnpm mobile:build:apk
+```
+
+---
+
+### 10. Troubleshooting Common Issues
+
+#### Issue 1: Port Conflict (Port 5433, 27018, or 6379 already in use)
+* **Symptom:** Docker container fails to bind to port.
+* **Fix:** Check running ports with `sudo lsof -i :<port>` or `docker ps`. Stop conflicting local PostgreSQL/MongoDB services or adjust the port mapping in `docker-compose.yml` and `.env`.
+
+#### Issue 2: `PrismaClientInitializationError: Can't reach database server`
+* **Symptom:** API fails to start with database connection error.
+* **Fix:** Verify Docker containers are running with `docker compose ps`. Test PostgreSQL connectivity via `nc -zv localhost 5433`. Run `pnpm --filter api prisma:generate` to refresh client bindings.
+
+#### Issue 3: pnpm store or lockfile mismatch error (`ERR_PNPM_UNEXPECTED_STORE`)
+* **Symptom:** `pnpm install` or `pnpm build` displays store warning.
+* **Fix:** Run a clean install:
+  ```bash
+  rm -rf node_modules apps/*/node_modules packages/*/node_modules
+  pnpm install
+  ```
+
+#### Issue 4: Next.js SSR Hydration Error on Input components
+* **Symptom:** Console warning about `htmlFor` / `id` attribute mismatch.
+* **Fix:** Ensure dynamic IDs use `React.useId()` instead of `Math.random()` or time-based keys. This has been resolved in `@monorepo/ui` and `apps/web/src/components/ui/Input.tsx`.
+
+#### Issue 5: Expo Prebuild / Metro Build Error in Mobile
+* **Symptom:** `Error: Unable to resolve module @babel/runtime/helpers/...`
+* **Fix:** Ensure `babel-preset-expo: ~12.0.12` and `@babel/runtime: ^7.25.0` are present in `apps/mobile/package.json` and `apps/mobile/babel.config.js` exists. Both are pre-configured.

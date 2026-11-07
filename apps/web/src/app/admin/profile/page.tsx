@@ -246,7 +246,7 @@ export default function AdminProfilePage() {
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     required
-                    className="w-full text-sm rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className="w-full text-sm rounded-lg border border-slate-200 px-3 py-2 focus:outline-none "
                   />
                 </div>
                 <div>
@@ -258,7 +258,7 @@ export default function AdminProfilePage() {
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     required
-                    className="w-full text-sm rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className="w-full text-sm rounded-lg border border-slate-200 px-3 py-2 focus:outline-none "
                   />
                 </div>
               </div>
@@ -293,7 +293,7 @@ export default function AdminProfilePage() {
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       placeholder="+1 (555) 000-0000"
-                      className="w-full text-sm rounded-lg border border-slate-200 pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full text-sm rounded-lg border border-slate-200 pl-9 pr-3 py-2 focus:outline-none "
                     />
                   </div>
                 </div>
@@ -309,7 +309,7 @@ export default function AdminProfilePage() {
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                       placeholder="City, State, Country"
-                      className="w-full text-sm rounded-lg border border-slate-200 pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full text-sm rounded-lg border border-slate-200 pl-9 pr-3 py-2 focus:outline-none "
                     />
                   </div>
                 </div>
@@ -326,7 +326,7 @@ export default function AdminProfilePage() {
                     value={profilePictureUrl}
                     onChange={(e) => setProfilePictureUrl(e.target.value)}
                     placeholder="https://example.com/avatar.jpg"
-                    className="w-full text-sm rounded-lg border border-slate-200 pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className="w-full text-sm rounded-lg border border-slate-200 pl-9 pr-3 py-2 focus:outline-none "
                   />
                 </div>
               </div>
@@ -381,7 +381,7 @@ export default function AdminProfilePage() {
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     required
                     placeholder="••••••••••••"
-                    className="w-full text-sm rounded-lg border border-slate-200 pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className="w-full text-sm rounded-lg border border-slate-200 pl-9 pr-3 py-2 focus:outline-none "
                   />
                 </div>
               </div>
@@ -399,7 +399,7 @@ export default function AdminProfilePage() {
                       onChange={(e) => setNewPassword(e.target.value)}
                       required
                       placeholder="Min. 8 characters"
-                      className="w-full text-sm rounded-lg border border-slate-200 pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full text-sm rounded-lg border border-slate-200 pl-9 pr-3 py-2 focus:outline-none "
                     />
                   </div>
                 </div>
@@ -416,7 +416,7 @@ export default function AdminProfilePage() {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
                       placeholder="••••••••••••"
-                      className="w-full text-sm rounded-lg border border-slate-200 pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full text-sm rounded-lg border border-slate-200 pl-9 pr-3 py-2 focus:outline-none "
                     />
                   </div>
                 </div>

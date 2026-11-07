@@ -432,7 +432,7 @@ export default function SettingsPage() {
             placeholder="Search by key name or description..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors"
+            className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none  transition-colors"
           />
         </div>
       </div>
@@ -572,7 +572,7 @@ export default function SettingsPage() {
                 <select
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
-                  className="w-full text-sm rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  className="w-full text-sm rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none "
                 >
                   <option value="true">true (Enabled)</option>
                   <option value="false">false (Disabled)</option>
@@ -581,7 +581,7 @@ export default function SettingsPage() {
                 <select
                   value={editValue.toUpperCase()}
                   onChange={(e) => setEditValue(e.target.value.toUpperCase())}
-                  className="w-full text-sm rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  className="w-full text-sm rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none "
                 >
                   <option value="LIGHT">LIGHT (Default Light Mode)</option>
                   <option value="DARK">DARK (Dark Mode)</option>
@@ -603,7 +603,7 @@ export default function SettingsPage() {
                   }
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
-                  className="w-full text-sm rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  className="w-full text-sm rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none "
                 />
               )}
             </div>

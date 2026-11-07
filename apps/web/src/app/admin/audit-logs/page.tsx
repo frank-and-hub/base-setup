@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { AuditLog, PaginatedResult } from '@monorepo/shared-types';
-import { api } from '@/lib/api';
-import { DataTable } from '@/components/data-table/DataTable';
-import { ColumnDef } from '@/components/data-table/types';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
-import { Modal } from '@/components/ui/Modal';
+import React, { useState, useEffect, useCallback } from "react";
+import { AuditLog, PaginatedResult } from "@monorepo/shared-types";
+import { api } from "@/lib/api";
+import { DataTable } from "@/components/data-table/DataTable";
+import { ColumnDef } from "@/components/data-table/types";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
+import { Modal } from "@/components/ui/Modal";
 import {
   FileText,
   RefreshCw,
@@ -19,7 +19,7 @@ import {
   Copy,
   Check,
   Filter,
-} from 'lucide-react';
+} from "lucide-react";
 
 export default function AuditLogsPage() {
   const [data, setData] = useState<AuditLog[]>([]);
@@ -27,11 +27,11 @@ export default function AuditLogsPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
-  const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState('timestamp');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [selectedOutcome, setSelectedOutcome] = useState<string>('ALL');
-  const [selectedResource, setSelectedResource] = useState<string>('ALL');
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("timestamp");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [selectedOutcome, setSelectedOutcome] = useState<string>("ALL");
+  const [selectedResource, setSelectedResource] = useState<string>("ALL");
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,21 +51,32 @@ export default function AuditLogsPage() {
       sortOrder,
     });
 
-    if (search.trim()) params.append('search', search.trim());
-    if (selectedOutcome !== 'ALL') params.append('outcome', selectedOutcome);
-    if (selectedResource !== 'ALL') params.append('resource_type', selectedResource);
+    if (search.trim()) params.append("search", search.trim());
+    if (selectedOutcome !== "ALL") params.append("outcome", selectedOutcome);
+    if (selectedResource !== "ALL")
+      params.append("resource_type", selectedResource);
 
     try {
-      const res = await api.get<PaginatedResult<AuditLog>>(`/audit-logs?${params.toString()}`);
+      const res = await api.get<PaginatedResult<AuditLog>>(
+        `/audit-logs?${params.toString()}`,
+      );
       setData(res.data);
       setTotalItems(res.meta.totalItems);
       setTotalPages(res.meta.totalPages);
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch audit logs');
+      setError(err.message || "Failed to fetch audit logs");
     } finally {
       setIsLoading(false);
     }
-  }, [page, limit, sortBy, sortOrder, search, selectedOutcome, selectedResource]);
+  }, [
+    page,
+    limit,
+    sortBy,
+    sortOrder,
+    search,
+    selectedOutcome,
+    selectedResource,
+  ]);
 
   useEffect(() => {
     fetchLogs();
@@ -77,19 +88,22 @@ export default function AuditLogsPage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const getActionBadgeVariant = (action: string): 'default' | 'success' | 'warning' | 'danger' | 'indigo' => {
-    if (action.includes('CREATE') || action.includes('REGISTER')) return 'success';
-    if (action.includes('UPDATE') || action.includes('MODIFY')) return 'indigo';
-    if (action.includes('DELETE') || action.includes('REMOVE')) return 'danger';
-    if (action.includes('LOGIN') || action.includes('AUTH')) return 'default';
-    return 'warning';
+  const getActionBadgeVariant = (
+    action: string,
+  ): "default" | "success" | "warning" | "danger" | "indigo" => {
+    if (action.includes("CREATE") || action.includes("REGISTER"))
+      return "success";
+    if (action.includes("UPDATE") || action.includes("MODIFY")) return "indigo";
+    if (action.includes("DELETE") || action.includes("REMOVE")) return "danger";
+    if (action.includes("LOGIN") || action.includes("AUTH")) return "default";
+    return "warning";
   };
 
   const columns: ColumnDef<AuditLog>[] = [
     {
-      id: 'timestamp',
-      header: 'Timestamp',
-      accessorKey: 'timestamp',
+      id: "timestamp",
+      header: "Timestamp",
+      accessorKey: "timestamp",
       sortable: true,
       cell: (log) => (
         <div className="flex flex-col">
@@ -97,19 +111,23 @@ export default function AuditLogsPage() {
             {new Date(log.timestamp).toLocaleDateString()}
           </span>
           <span className="text-[11px] text-slate-500">
-            {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            {new Date(log.timestamp).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            })}
           </span>
         </div>
       ),
     },
     {
-      id: 'actor',
-      header: 'Actor',
-      accessorKey: 'actor_email',
+      id: "actor",
+      header: "Actor",
+      accessorKey: "actor_email",
       cell: (log) => (
         <div className="flex flex-col">
           <span className="text-xs font-semibold text-slate-900">
-            {log.actor_email || 'System'}
+            {log.actor_email || "System"}
           </span>
           {log.actor_uuid && (
             <span className="text-[10px] text-slate-400 font-mono">
@@ -120,19 +138,17 @@ export default function AuditLogsPage() {
       ),
     },
     {
-      id: 'action',
-      header: 'Action',
-      accessorKey: 'action',
+      id: "action",
+      header: "Action",
+      accessorKey: "action",
       cell: (log) => (
-        <Badge variant={getActionBadgeVariant(log.action)}>
-          {log.action}
-        </Badge>
+        <Badge variant={getActionBadgeVariant(log.action)}>{log.action}</Badge>
       ),
     },
     {
-      id: 'resource',
-      header: 'Resource',
-      accessorKey: 'resource_type',
+      id: "resource",
+      header: "Resource",
+      accessorKey: "resource_type",
       cell: (log) => (
         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
           {log.resource_type}
@@ -140,11 +156,11 @@ export default function AuditLogsPage() {
       ),
     },
     {
-      id: 'outcome',
-      header: 'Outcome',
-      accessorKey: 'outcome',
+      id: "outcome",
+      header: "Outcome",
+      accessorKey: "outcome",
       cell: (log) =>
-        log.outcome === 'SUCCESS' ? (
+        log.outcome === "SUCCESS" ? (
           <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
             <CheckCircle2 className="w-3.5 h-3.5" />
             SUCCESS
@@ -157,9 +173,9 @@ export default function AuditLogsPage() {
         ),
     },
     {
-      id: 'correlation_id',
-      header: 'Correlation ID',
-      accessorKey: 'correlation_id',
+      id: "correlation_id",
+      header: "Correlation ID",
+      accessorKey: "correlation_id",
       cell: (log) => (
         <div className="flex items-center gap-1.5 font-mono text-[11px] text-slate-500">
           <span>{log.correlation_id.slice(0, 8)}...</span>
@@ -181,8 +197,8 @@ export default function AuditLogsPage() {
       ),
     },
     {
-      id: 'actions',
-      header: 'Details',
+      id: "actions",
+      header: "Details",
       cell: (log) => (
         <Button
           variant="outline"
@@ -203,8 +219,8 @@ export default function AuditLogsPage() {
       <div>
         <Breadcrumbs
           items={[
-            { label: 'Admin', href: '/admin/dashboard' },
-            { label: 'Audit Logs' },
+            { label: "Admin", href: "/admin/dashboard" },
+            { label: "Audit Logs" },
           ]}
         />
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-2">
@@ -214,7 +230,8 @@ export default function AuditLogsPage() {
               Structured PostgreSQL Audit Logs
             </h1>
             <p className="text-sm text-slate-500 mt-1">
-              Immutable audit log of all administrative actions, authorization events, and entity state changes.
+              Immutable audit log of all administrative actions, authorization
+              events, and entity state changes.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -225,7 +242,9 @@ export default function AuditLogsPage() {
               disabled={isLoading}
               className="flex items-center gap-1.5"
             >
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
+              />
               Refresh
             </Button>
           </div>
@@ -244,7 +263,7 @@ export default function AuditLogsPage() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors"
+            className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none  transition-colors"
           />
         </div>
 
@@ -334,51 +353,89 @@ export default function AuditLogsPage() {
             {/* Meta Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs">
               <div>
-                <span className="text-slate-400 block font-medium">Log UUID</span>
-                <span className="font-mono text-slate-800 break-all">{selectedLog.audit_log_uuid}</span>
+                <span className="text-slate-400 block font-medium">
+                  Log UUID
+                </span>
+                <span className="font-mono text-slate-800 break-all">
+                  {selectedLog.audit_log_uuid}
+                </span>
               </div>
               <div>
                 <span className="text-slate-400 block font-medium">Action</span>
-                <Badge variant={getActionBadgeVariant(selectedLog.action)} className="mt-0.5">
+                <Badge
+                  variant={getActionBadgeVariant(selectedLog.action)}
+                  className="mt-0.5"
+                >
                   {selectedLog.action}
                 </Badge>
               </div>
               <div>
-                <span className="text-slate-400 block font-medium">Outcome</span>
-                <span className={`font-semibold ${selectedLog.outcome === 'SUCCESS' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                <span className="text-slate-400 block font-medium">
+                  Outcome
+                </span>
+                <span
+                  className={`font-semibold ${selectedLog.outcome === "SUCCESS" ? "text-emerald-600" : "text-rose-600"}`}
+                >
                   {selectedLog.outcome}
                 </span>
               </div>
               <div>
                 <span className="text-slate-400 block font-medium">Actor</span>
-                <span className="text-slate-800 font-medium">{selectedLog.actor_email || 'System'}</span>
+                <span className="text-slate-800 font-medium">
+                  {selectedLog.actor_email || "System"}
+                </span>
                 {selectedLog.actor_uuid && (
-                  <span className="text-[10px] text-slate-400 font-mono block">{selectedLog.actor_uuid}</span>
+                  <span className="text-[10px] text-slate-400 font-mono block">
+                    {selectedLog.actor_uuid}
+                  </span>
                 )}
               </div>
               <div>
-                <span className="text-slate-400 block font-medium">Resource Type & ID</span>
-                <span className="text-slate-800 font-semibold">{selectedLog.resource_type}</span>
+                <span className="text-slate-400 block font-medium">
+                  Resource Type & ID
+                </span>
+                <span className="text-slate-800 font-semibold">
+                  {selectedLog.resource_type}
+                </span>
                 {selectedLog.affected_resource_uuid && (
-                  <span className="text-[10px] text-slate-400 font-mono block">{selectedLog.affected_resource_uuid}</span>
+                  <span className="text-[10px] text-slate-400 font-mono block">
+                    {selectedLog.affected_resource_uuid}
+                  </span>
                 )}
               </div>
               <div>
-                <span className="text-slate-400 block font-medium">Timestamp</span>
-                <span className="text-slate-800">{new Date(selectedLog.timestamp).toLocaleString()}</span>
+                <span className="text-slate-400 block font-medium">
+                  Timestamp
+                </span>
+                <span className="text-slate-800">
+                  {new Date(selectedLog.timestamp).toLocaleString()}
+                </span>
               </div>
               <div>
-                <span className="text-slate-400 block font-medium">Correlation ID</span>
-                <span className="font-mono text-slate-700">{selectedLog.correlation_id}</span>
+                <span className="text-slate-400 block font-medium">
+                  Correlation ID
+                </span>
+                <span className="font-mono text-slate-700">
+                  {selectedLog.correlation_id}
+                </span>
               </div>
               <div>
-                <span className="text-slate-400 block font-medium">IP Address</span>
-                <span className="text-slate-700">{selectedLog.ip_address || '—'}</span>
+                <span className="text-slate-400 block font-medium">
+                  IP Address
+                </span>
+                <span className="text-slate-700">
+                  {selectedLog.ip_address || "—"}
+                </span>
               </div>
               <div className="col-span-2 sm:col-span-1">
-                <span className="text-slate-400 block font-medium">User Agent</span>
-                <span className="text-slate-700 truncate block" title={selectedLog.user_agent || ''}>
-                  {selectedLog.user_agent || '—'}
+                <span className="text-slate-400 block font-medium">
+                  User Agent
+                </span>
+                <span
+                  className="text-slate-700 truncate block"
+                  title={selectedLog.user_agent || ""}
+                >
+                  {selectedLog.user_agent || "—"}
                 </span>
               </div>
             </div>
@@ -389,13 +446,19 @@ export default function AuditLogsPage() {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs font-semibold text-slate-700">
                   <span>Before State</span>
-                  <span className="text-[10px] text-slate-400">Previous snapshot</span>
+                  <span className="text-[10px] text-slate-400">
+                    Previous snapshot
+                  </span>
                 </div>
                 <div className="p-3 bg-slate-900 rounded-lg text-emerald-400 font-mono text-xs overflow-auto max-h-60">
                   {selectedLog.before_state ? (
-                    <pre>{JSON.stringify(selectedLog.before_state, null, 2)}</pre>
+                    <pre>
+                      {JSON.stringify(selectedLog.before_state, null, 2)}
+                    </pre>
                   ) : (
-                    <span className="text-slate-500 italic">No prior state recorded (e.g. creation event)</span>
+                    <span className="text-slate-500 italic">
+                      No prior state recorded (e.g. creation event)
+                    </span>
                   )}
                 </div>
               </div>
@@ -404,13 +467,19 @@ export default function AuditLogsPage() {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs font-semibold text-slate-700">
                   <span>After State</span>
-                  <span className="text-[10px] text-slate-400">New snapshot</span>
+                  <span className="text-[10px] text-slate-400">
+                    New snapshot
+                  </span>
                 </div>
                 <div className="p-3 bg-slate-900 rounded-lg text-emerald-400 font-mono text-xs overflow-auto max-h-60">
                   {selectedLog.after_state ? (
-                    <pre>{JSON.stringify(selectedLog.after_state, null, 2)}</pre>
+                    <pre>
+                      {JSON.stringify(selectedLog.after_state, null, 2)}
+                    </pre>
                   ) : (
-                    <span className="text-slate-500 italic">No state recorded (e.g. deletion event)</span>
+                    <span className="text-slate-500 italic">
+                      No state recorded (e.g. deletion event)
+                    </span>
                   )}
                 </div>
               </div>
