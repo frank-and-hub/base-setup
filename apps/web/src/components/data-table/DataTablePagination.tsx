@@ -1,8 +1,13 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
-import { Button } from '../ui/Button';
+import React from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
+import { Button } from "../ui/Button";
 
 interface DataTablePaginationProps {
   page: number;
@@ -29,18 +34,20 @@ export const DataTablePagination: React.FC<DataTablePaginationProps> = ({
       {/* Items Count & Limit Selector */}
       <div className="flex items-center gap-4 text-xs text-slate-600">
         <div>
-          Showing <span className="font-semibold text-slate-900">{startItem}</span> to{' '}
-          <span className="font-semibold text-slate-900">{endItem}</span> of{' '}
-          <span className="font-semibold text-slate-900">{totalItems}</span> entries
+          Showing{" "}
+          <span className="font-semibold text-slate-900">{startItem}</span> to{" "}
+          <span className="font-semibold text-slate-900">{endItem}</span> of{" "}
+          <span className="font-semibold text-slate-900">{totalItems}</span>{" "}
+          entries
         </div>
         <div className="flex items-center gap-2">
           <span>Rows per page:</span>
           <select
             value={limit}
             onChange={(e) => onLimitChange(Number(e.target.value))}
-            className="px-2 py-1 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+            className="px-2 py-1 bg-white border border-slate-300 rounded text-xs  focus:outline-none"
           >
-            {[5, 10, 20, 50].map((pageSize) => (
+            {[5, 10, 20, 50, 80, 100, 200, 500].map((pageSize) => (
               <option key={pageSize} value={pageSize}>
                 {pageSize}
               </option>
@@ -52,8 +59,10 @@ export const DataTablePagination: React.FC<DataTablePaginationProps> = ({
       {/* Navigation Buttons */}
       <div className="flex items-center gap-2">
         <span className="text-xs text-slate-600 mr-2">
-          Page <span className="font-semibold text-slate-900">{page}</span> of{' '}
-          <span className="font-semibold text-slate-900">{totalPages || 1}</span>
+          Page <span className="font-semibold text-slate-900">{page}</span> of{" "}
+          <span className="font-semibold text-slate-900">
+            {totalPages || 1}
+          </span>
         </span>
 
         <Button
@@ -100,4 +109,3 @@ export const DataTablePagination: React.FC<DataTablePaginationProps> = ({
     </div>
   );
 };
-

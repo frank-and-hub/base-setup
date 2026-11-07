@@ -49,7 +49,7 @@ export const DataTableToolbar: React.FC<DataTableToolbarProps> = ({
               value={internalSearch}
               onChange={(e) => setInternalSearch(e.target.value)}
               placeholder={searchPlaceholder}
-              className="w-full pl-9 pr-8 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 placeholder-slate-400"
+              className="w-full pl-9 pr-8 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none placeholder-slate-400"
             />
             {internalSearch && (
               <button

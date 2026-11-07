@@ -278,7 +278,7 @@ export default function AuditLogsPage() {
                 setSelectedOutcome(e.target.value);
                 setPage(1);
               }}
-              className="text-xs rounded-lg border border-slate-200 px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="text-xs rounded-lg border border-slate-200 px-2 py-1.5 bg-white text-slate-700 focus:outline-none "
             >
               <option value="ALL">All Outcomes</option>
               <option value="SUCCESS">SUCCESS</option>
@@ -295,7 +295,7 @@ export default function AuditLogsPage() {
                 setSelectedResource(e.target.value);
                 setPage(1);
               }}
-              className="text-xs rounded-lg border border-slate-200 px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="text-xs rounded-lg border border-slate-200 px-2 py-1.5 bg-white text-slate-700 focus:outline-none "
             >
               <option value="ALL">All Resources</option>
               <option value="User">User</option>

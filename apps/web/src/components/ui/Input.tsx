@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { cn } from "@/lib/utils";
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -10,14 +10,20 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type = 'text', label, error, helperText, id, ...props }, ref) => {
+  (
+    { className, type = "text", label, error, helperText, id, ...props },
+    ref,
+  ) => {
     const generatedId = React.useId();
     const inputId = id || props.name || generatedId;
 
     return (
       <div className="w-full space-y-1">
         {label && (
-          <label htmlFor={inputId} className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+          <label
+            htmlFor={inputId}
+            className="block text-xs font-semibold text-slate-700 uppercase tracking-wider"
+          >
             {label}
           </label>
         )}
@@ -26,20 +32,21 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           type={type}
           ref={ref}
           className={cn(
-            'w-full px-3 py-2 text-sm bg-white border rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-0',
+            "w-full px-3 py-2 text-sm bg-white border rounded-lg transition-all focus:outline-none ",
             error
-              ? 'border-rose-300 text-rose-900 placeholder-rose-300'
-              : 'border-slate-300 text-slate-900 placeholder-slate-400',
+              ? "border-rose-300 text-rose-900 placeholder-rose-300"
+              : "border-slate-300 text-slate-900 placeholder-slate-400",
             className,
           )}
           {...props}
         />
         {error && <p className="text-xs text-rose-600 mt-1">{error}</p>}
-        {helperText && !error && <p className="text-xs text-slate-500 mt-1">{helperText}</p>}
+        {helperText && !error && (
+          <p className="text-xs text-slate-500 mt-1">{helperText}</p>
+        )}
       </div>
     );
   },
 );
 
-Input.displayName = 'Input';
-
+Input.displayName = "Input";

@@ -1,18 +1,23 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { User, UserRole, UserStatus, PaginatedResult } from '@monorepo/shared-types';
-import { formatDate } from '@monorepo/shared-utils';
-import { api } from '@/lib/api';
-import { useAuth } from '@/context/AuthContext';
-import { DataTable } from '@/components/data-table/DataTable';
-import { ColumnDef } from '@/components/data-table/types';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
-import { Modal } from '@/components/ui/Modal';
-import { UserFormModal } from '@/components/users/UserFormModal';
-import { DeleteUserModal } from '@/components/users/DeleteUserModal';
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  User,
+  UserRole,
+  UserStatus,
+  PaginatedResult,
+} from "@monorepo/shared-types";
+import { formatDate } from "@monorepo/shared-utils";
+import { api } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
+import { DataTable } from "@/components/data-table/DataTable";
+import { ColumnDef } from "@/components/data-table/types";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
+import { Modal } from "@/components/ui/Modal";
+import { UserFormModal } from "@/components/users/UserFormModal";
+import { DeleteUserModal } from "@/components/users/DeleteUserModal";
 import {
   Plus,
   RefreshCw,
@@ -23,7 +28,7 @@ import {
   Activity,
   Copy,
   Check,
-} from 'lucide-react';
+} from "lucide-react";
 
 export default function AdminUsersPage() {
   const { user: currentUser } = useAuth();
@@ -34,11 +39,11 @@ export default function AdminUsersPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
-  const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState('created_at');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [selectedRole, setSelectedRole] = useState<string>('ALL');
-  const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("created_at");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [selectedRole, setSelectedRole] = useState<string>("ALL");
+  const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
 
   // UI state
   const [isLoading, setIsLoading] = useState(true);
@@ -66,17 +71,19 @@ export default function AdminUsersPage() {
       sortOrder,
     });
 
-    if (search.trim()) params.append('search', search.trim());
-    if (selectedRole !== 'ALL') params.append('role', selectedRole);
-    if (selectedStatus !== 'ALL') params.append('status', selectedStatus);
+    if (search.trim()) params.append("search", search.trim());
+    if (selectedRole !== "ALL") params.append("role", selectedRole);
+    if (selectedStatus !== "ALL") params.append("status", selectedStatus);
 
     try {
-      const res = await api.get<PaginatedResult<User>>(`/users?${params.toString()}`);
+      const res = await api.get<PaginatedResult<User>>(
+        `/users?${params.toString()}`,
+      );
       setData(res.data);
       setTotalItems(res.meta.totalItems);
       setTotalPages(res.meta.totalPages);
     } catch (err: any) {
-      setError(err.message || 'Failed to load users');
+      setError(err.message || "Failed to load users");
     } finally {
       setIsLoading(false);
     }
@@ -92,7 +99,7 @@ export default function AdminUsersPage() {
       if (activeUser) {
         await api.patch(`/users/${activeUser.user_uuid}`, payload);
       } else {
-        await api.post('/users', payload);
+        await api.post("/users", payload);
       }
       fetchUsers();
     } finally {
@@ -109,7 +116,7 @@ export default function AdminUsersPage() {
       setActiveUser(null);
       fetchUsers();
     } catch (err: any) {
-      alert(err.message || 'Failed to delete user');
+      alert(err.message || "Failed to delete user");
     } finally {
       setIsActionLoading(false);
     }
@@ -120,10 +127,12 @@ export default function AdminUsersPage() {
     setIsActivityModalOpen(true);
     setIsLoadingActivities(true);
     try {
-      const activities = await api.get<any[]>(`/activity-logs/user/${targetUser.user_uuid}`);
+      const activities = await api.get<any[]>(
+        `/activity-logs/user/${targetUser.user_uuid}`,
+      );
       setUserActivities(activities);
     } catch (err: any) {
-      console.error('Failed to load user activity history:', err);
+      console.error("Failed to load user activity history:", err);
     } finally {
       setIsLoadingActivities(false);
     }
@@ -134,8 +143,8 @@ export default function AdminUsersPage() {
 
   const columns: ColumnDef<User>[] = [
     {
-      id: 'name',
-      header: 'User Identity',
+      id: "name",
+      header: "User Identity",
       sortable: true,
       cell: (row) => (
         <div className="flex items-center gap-3">
@@ -147,7 +156,9 @@ export default function AdminUsersPage() {
             <div className="font-semibold text-slate-900">
               {row.first_name} {row.last_name}
             </div>
-            <div className="text-[11px] text-slate-500 font-mono">{row.email}</div>
+            <div className="text-[11px] text-slate-500 font-mono">
+              {row.email}
+            </div>
           </div>
         </div>
       ),
@@ -164,55 +175,59 @@ export default function AdminUsersPage() {
     },
     */
     {
-      id: 'role',
-      header: 'Role (RBAC)',
+      id: "role",
+      header: "Role (RBAC)",
       sortable: true,
       cell: (row) => {
         const variant =
           row.role === UserRole.SUPER_ADMIN
-            ? 'indigo'
+            ? "indigo"
             : row.role === UserRole.ADMIN
-            ? 'blue'
-            : row.role === UserRole.MODERATOR
-            ? 'amber'
-            : 'slate';
+              ? "blue"
+              : row.role === UserRole.MODERATOR
+                ? "amber"
+                : "slate";
         return <Badge variant={variant}>{row.role}</Badge>;
       },
     },
     {
-      id: 'status',
-      header: 'Status',
+      id: "status",
+      header: "Status",
       sortable: true,
       cell: (row) => {
         const variant =
           row.status === UserStatus.ACTIVE
-            ? 'emerald'
+            ? "emerald"
             : row.status === UserStatus.INACTIVE
-            ? 'amber'
-            : 'rose';
+              ? "amber"
+              : "rose";
         return <Badge variant={variant}>{row.status}</Badge>;
       },
     },
     {
-      id: 'created_at',
-      header: 'Registered',
-      sortable: true,
-      cell: (row) => <span className="text-[11px] text-slate-500">{formatDate(row.created_at)}</span>,
-    },
-    {
-      id: 'last_login_at',
-      header: 'Last Login',
+      id: "created_at",
+      header: "Registered",
       sortable: true,
       cell: (row) => (
         <span className="text-[11px] text-slate-500">
-          {row.last_login_at ? formatDate(row.last_login_at) : 'Never'}
+          {formatDate(row.created_at)}
         </span>
       ),
     },
     {
-      id: 'actions',
-      header: 'Actions',
-      align: 'right',
+      id: "last_login_at",
+      header: "Last Login",
+      sortable: true,
+      cell: (row) => (
+        <span className="text-[11px] text-slate-500">
+          {row.last_login_at ? formatDate(row.last_login_at) : "Never"}
+        </span>
+      ),
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      align: "right",
       cell: (row) => (
         <div className="flex items-center justify-end gap-1">
           {/* Activity Logs history button (Requirement 9.6) */}
@@ -246,8 +261,8 @@ export default function AdminUsersPage() {
               disabled={row.user_uuid === currentUser?.user_uuid}
               title={
                 row.user_uuid === currentUser?.user_uuid
-                  ? 'Cannot delete your own account'
-                  : 'Delete user'
+                  ? "Cannot delete your own account"
+                  : "Delete user"
               }
               className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors disabled:opacity-30"
             >
@@ -263,16 +278,26 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <Breadcrumbs items={[{ label: 'User Management' }]} />
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">User Management</h1>
+          <Breadcrumbs items={[{ label: "User Management" }]} />
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            User Management
+          </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            PostgreSQL relational entities with UUID keys, RBAC control, and activity auditing.
+            PostgreSQL relational entities with UUID keys, RBAC control, and
+            activity auditing.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5">
-          <Button variant="outline" size="sm" onClick={() => fetchUsers()} disabled={isLoading}>
-            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fetchUsers()}
+            disabled={isLoading}
+          >
+            <RefreshCw
+              className={`w-3.5 h-3.5 mr-1.5 ${isLoading ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
 
@@ -329,7 +354,7 @@ export default function AdminUsersPage() {
                 setSelectedRole(e.target.value);
                 setPage(1);
               }}
-              className="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 focus:outline-none "
             >
               <option value="ALL">All Roles</option>
               <option value="SUPER_ADMIN">Super Admin</option>
@@ -344,7 +369,7 @@ export default function AdminUsersPage() {
                 setSelectedStatus(e.target.value);
                 setPage(1);
               }}
-              className="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 focus:outline-none "
             >
               <option value="ALL">All Statuses</option>
               <option value="ACTIVE">Active</option>
@@ -393,20 +418,32 @@ export default function AdminUsersPage() {
           ) : (
             <div className="divide-y divide-slate-100 max-h-96 overflow-y-auto pr-1">
               {userActivities.map((act) => (
-                <div key={act.activity_log_uuid} className="py-2.5 text-xs flex justify-between items-start">
+                <div
+                  key={act.activity_log_uuid}
+                  className="py-2.5 text-xs flex justify-between items-start"
+                >
                   <div>
-                    <div className="font-semibold text-slate-900">{act.action}</div>
+                    <div className="font-semibold text-slate-900">
+                      {act.action}
+                    </div>
                     <div className="text-[11px] text-slate-400 font-mono">
-                      Correlation: {act.correlation_id} • IP: {act.ip_address || '127.0.0.1'}
+                      Correlation: {act.correlation_id} • IP:{" "}
+                      {act.ip_address || "127.0.0.1"}
                     </div>
                   </div>
-                  <span className="text-[11px] text-slate-400">{formatDate(act.timestamp)}</span>
+                  <span className="text-[11px] text-slate-400">
+                    {formatDate(act.timestamp)}
+                  </span>
                 </div>
               ))}
             </div>
           )}
           <div className="pt-3 border-t border-slate-100 flex justify-end">
-            <Button variant="outline" size="sm" onClick={() => setIsActivityModalOpen(false)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsActivityModalOpen(false)}
+            >
               Close
             </Button>
           </div>
@@ -415,4 +452,3 @@ export default function AdminUsersPage() {
     </div>
   );
 }
-

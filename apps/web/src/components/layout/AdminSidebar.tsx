@@ -122,7 +122,7 @@ export function AdminSidebar({
             </div>
           )}
         </Link>
-        <button
+        <a
           onClick={onToggleCollapse}
           className="hidden md:flex p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -132,13 +132,13 @@ export function AdminSidebar({
           ) : (
             <ChevronLeft className="w-4 h-4" />
           )}
-        </button>
-        <button
+        </a>
+        <a
           onClick={onMobileClose}
           className="md:hidden p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"
         >
           <X className="w-5 h-5" />
-        </button>
+        </a>
       </div>
 
       {/* Navigation List */}
@@ -164,13 +164,13 @@ export function AdminSidebar({
             if (hasChildren) {
               return (
                 <div key={itemKey} className="space-y-1">
-                  <button
+                  <a
                     type="button"
                     onClick={() => toggleExpand(itemKey)}
                     className={cn(
                       "w-full flex items-center justify-between px-3 py-2 text-xs font-medium rounded-lg transition-colors",
                       isActive
-                        ? "bg-indigo-400 text-white"
+                        ? "bg-indigo-400 text-white btn"
                         : "text-slate-400 hover:text-white hover:bg-slate-800/50",
                     )}
                     title={isCollapsed ? item.label : undefined}
@@ -190,7 +190,7 @@ export function AdminSidebar({
                         )}
                       </span>
                     )}
-                  </button>
+                  </a>
 
                   {/* Child Menus */}
                   {!isCollapsed && isExpanded && (
@@ -230,7 +230,7 @@ export function AdminSidebar({
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 text-xs font-medium rounded-lg transition-colors",
                   isActive
-                    ? "bg-indigo-400 text-white font-semibold shadow-sm"
+                    ? "bg-indigo-400 text-white font-semibold shadow-sm btn"
                     : "text-slate-400 hover:text-white hover:bg-slate-800/50",
                 )}
                 title={isCollapsed ? item.label : undefined}

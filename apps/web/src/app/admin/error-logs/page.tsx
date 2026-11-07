@@ -261,7 +261,7 @@ export default function ErrorLogsPage() {
               setSelectedStatusCode(e.target.value);
               setPage(1);
             }}
-            className="text-xs rounded-lg border border-slate-200 px-3 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="text-xs rounded-lg border border-slate-200 px-3 py-1.5 bg-white text-slate-700 focus:outline-none "
           >
             <option value="ALL">All Status Codes</option>
             <option value="500">500 Internal Server Error</option>
